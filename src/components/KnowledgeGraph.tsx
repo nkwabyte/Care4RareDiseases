@@ -1,5 +1,5 @@
 import { Card } from './ui/card';
-import { KnowledgeGraphData } from '../data/patientData';
+import { KnowledgeGraphData } from '../lib/data/patientData';
 
 interface KnowledgeGraphProps {
   graphData?: KnowledgeGraphData;
@@ -44,7 +44,7 @@ export function KnowledgeGraph({ graphData }: KnowledgeGraphProps) {
   return (
     <Card className="p-6 bg-card border-border h-full">
       <h3 className="mb-4 text-slate-100">Diagnostic Knowledge Graph</h3>
-      
+
       <div className="bg-[#2d1b4e] rounded-lg p-6 h-[calc(100%-3rem)] flex flex-col">
         <svg width="100%" height="100%" viewBox="0 0 800 500" className="overflow-visible flex-1">
           {/* Edges */}
@@ -52,9 +52,9 @@ export function KnowledgeGraph({ graphData }: KnowledgeGraphProps) {
             const fromNode = nodes.find(n => n.id === edge.from);
             const toNode = nodes.find(n => n.id === edge.to);
             if (!fromNode || !toNode) return null;
-            
+
             const edgeStyle = getEdgeStyle(edge.strength);
-            
+
             return (
               <line
                 key={`edge-${index}`}
@@ -66,7 +66,7 @@ export function KnowledgeGraph({ graphData }: KnowledgeGraphProps) {
               />
             );
           })}
-          
+
           {/* Nodes */}
           {nodes.map((node) => (
             <g key={node.id}>
@@ -100,7 +100,7 @@ export function KnowledgeGraph({ graphData }: KnowledgeGraphProps) {
             </g>
           ))}
         </svg>
-        
+
         {/* Legend */}
         <div className="flex gap-4 mt-4 justify-center flex-wrap">
           <div className="flex items-center gap-2">

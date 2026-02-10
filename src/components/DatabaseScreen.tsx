@@ -19,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from './ui/table';
-import { DATABASE_PATIENTS, DatabasePatient } from '../data/databaseData';
+import { DATABASE_PATIENTS, DatabasePatient } from '../lib/data/databaseData';
 import { useAssignedPatients } from '../hooks/useAssignedPatients';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -56,7 +56,7 @@ export function DatabaseScreen({ onPatientClick }: DatabaseScreenProps) {
   const filteredAndSortedPatients = patientsWithCurrentDoctor.filter((patient) => {
     // Only show assigned patients
     const isAssignedPatient = assignedPatientIds.includes(patient.patientId);
-    
+
     const matchesSearch =
       patient.patientId.toLowerCase().includes(searchQuery.toLowerCase()) ||
       patient.assignedClinician.toLowerCase().includes(searchQuery.toLowerCase()) ||

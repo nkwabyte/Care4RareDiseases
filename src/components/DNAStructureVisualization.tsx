@@ -1,6 +1,6 @@
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
-import { VariantInfo } from '../data/patientData';
+import { VariantInfo } from '../lib/data/patientData';
 
 interface DNAStructureVisualizationProps {
   variantInfo?: VariantInfo;
@@ -31,7 +31,7 @@ export function DNAStructureVisualization({ variantInfo }: DNAStructureVisualiza
   return (
     <Card className="p-5 bg-card border-border">
       <h3 className="mb-4 text-slate-100">Variant Information</h3>
-      
+
       {/* Variant Details Grid */}
       <div className="bg-[#2d1b4e] rounded-lg p-5 space-y-4">
         {/* Top Row - Gene and Pathogenicity */}

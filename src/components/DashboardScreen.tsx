@@ -31,8 +31,8 @@ import {
 } from 'recharts';
 import { useAuth } from '../contexts/AuthContext';
 import { useAssignedPatients } from '../hooks/useAssignedPatients';
-import { DATABASE_PATIENTS } from '../data/databaseData';
-import { REPORTS } from '../data/reportsData';
+import { DATABASE_PATIENTS } from '../lib/data/databaseData';
+import { REPORTS } from '../lib/data/reportsData';
 
 interface DashboardScreenProps {
   onNavigateToPatients?: () => void;
@@ -43,19 +43,19 @@ export function DashboardScreen({ onNavigateToPatients }: DashboardScreenProps) 
   const { assignedPatientIds } = useAssignedPatients();
 
   // Calculate metrics based on assigned patients
-  const assignedPatientsData = DATABASE_PATIENTS.filter(p => 
+  const assignedPatientsData = DATABASE_PATIENTS.filter(p =>
     assignedPatientIds.includes(p.patientId)
   );
 
-  const pendingAnalysisCount = assignedPatientsData.filter(p => 
+  const pendingAnalysisCount = assignedPatientsData.filter(p =>
     p.status === 'Pending Analysis'
   ).length;
 
-  const resultsReadyCount = assignedPatientsData.filter(p => 
+  const resultsReadyCount = assignedPatientsData.filter(p =>
     p.status === 'Results Ready'
   ).length;
 
-  const reviewedCount = assignedPatientsData.filter(p => 
+  const reviewedCount = assignedPatientsData.filter(p =>
     p.status === 'Reviewed'
   ).length;
 
@@ -122,7 +122,7 @@ export function DashboardScreen({ onNavigateToPatients }: DashboardScreenProps) 
     },
   ];
 
-  const recentActivity = allActivity.filter(activity => 
+  const recentActivity = allActivity.filter(activity =>
     assignedPatientIds.includes(activity.patient)
   );
 
@@ -137,7 +137,7 @@ export function DashboardScreen({ onNavigateToPatients }: DashboardScreenProps) 
       let priority: 'High' | 'Medium' | 'Low' = 'Low';
       if (daysWaiting >= 5) priority = 'High';
       else if (daysWaiting >= 2) priority = 'Medium';
-      
+
       return {
         patientId: p.patientId,
         age: p.age,

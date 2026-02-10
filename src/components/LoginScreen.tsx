@@ -5,7 +5,6 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
 import { Alert, AlertDescription } from './ui/alert';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
 
 interface LoginScreenProps {
   onLoginSuccess: (session: any, doctor: any) => void;
@@ -23,17 +22,13 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
     setIsLoading(true);
 
     try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-fbf76271/auth/login`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${publicAnonKey}`,
-          },
-          body: JSON.stringify({ email, password }),
-        }
-      );
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
       const data = await response.json();
 
@@ -44,7 +39,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
       }
 
       // Login successful
-      onLoginSuccess(data.session, data.doctor);
+      onLoginSuccess(data, data.doctor);
     } catch (err) {
       console.error('Login error:', err);
       setError('An error occurred during login. Please try again.');
@@ -134,7 +129,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 
             <div className="mt-6 p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
               <p className="text-xs text-slate-400">
-                <strong className="text-purple-300">Note:</strong> Access to this platform is restricted to enrolled medical professionals. 
+                <strong className="text-purple-300">Note:</strong> Access to this platform is restricted to enrolled medical professionals.
                 Contact your administrator if you need login credentials.
               </p>
             </div>
@@ -146,11 +141,11 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
               <div className="space-y-1 text-xs">
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500">Email:</span>
-                  <code className="text-purple-300 bg-slate-900/50 px-2 py-0.5 rounded">kwame.mensah@hospital.gh</code>
+                  <code className="text-purple-300 bg-slate-900/50 px-2 py-0.5 rounded">admin@care4rare.com</code>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500">Password:</span>
-                  <code className="text-purple-300 bg-slate-900/50 px-2 py-0.5 rounded">demo123</code>
+                  <code className="text-purple-300 bg-slate-900/50 px-2 py-0.5 rounded">admin123</code>
                 </div>
               </div>
             </div>
