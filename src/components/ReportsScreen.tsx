@@ -12,19 +12,28 @@ import {
   TableHeader,
   TableRow,
 } from './ui/table';
-import { REPORTS } from '../lib/data/reportsData';
+import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
+import { fetchReports } from '@/lib/store/slices/reportsSlice';
+import { useEffect } from 'react';
 import { useAssignedPatients } from '../hooks/useAssignedPatients';
-import { useAuth } from '../contexts/AuthContext';
 import jsPDF from 'jspdf';
 
 export function ReportsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [dateFilter, setDateFilter] = useState('');
-  const { assignedPatientIds, isLoading } = useAssignedPatients();
-  const { doctor } = useAuth();
+  const { assignedPatientIds, isLoading: isLoadingPatients } = useAssignedPatients();
+  const doctor = useAppSelector((state) => state.auth.doctor);
+  const dispatch = useAppDispatch();
+  const { reports, isLoading: isLoadingReports } = useAppSelector((state) => state.reports);
+
+  useEffect(() => {
+    dispatch(fetchReports());
+  }, [dispatch]);
+
+  const isLoading = isLoadingPatients || isLoadingReports;
 
   // Map reports to show current doctor's name
-  const reportsWithCurrentDoctor = REPORTS.map(report => ({
+  const reportsWithCurrentDoctor = reports.map((report: any) => ({
     ...report,
     generatedBy: doctor?.name || report.generatedBy
   }));
@@ -74,12 +83,12 @@ export function ReportsScreen() {
 
     // Report Information Section
     doc.setFontSize(16);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('helvetica', 'bold');
     doc.text('Report Information', margin, yPos);
     yPos += 10;
 
     doc.setFontSize(11);
-    doc.setFont(undefined, 'normal');
+    doc.setFont('helvetica', 'normal');
 
     const reportInfo = [
       `Report ID: ${report.id}`,
@@ -101,12 +110,12 @@ export function ReportsScreen() {
 
     // Clinical Summary Section
     doc.setFontSize(16);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('helvetica', 'bold');
     doc.text('Clinical Summary', margin, yPos);
     yPos += 10;
 
     doc.setFontSize(11);
-    doc.setFont(undefined, 'normal');
+    doc.setFont('helvetica', 'normal');
 
     const summaryText = `This report contains comprehensive genetic analysis for patient ${report.patientId}. ` +
       `The analysis was performed using advanced AI-driven diagnostic tools to identify ` +
@@ -118,12 +127,12 @@ export function ReportsScreen() {
 
     // Primary Gene Candidate Section
     doc.setFontSize(16);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('helvetica', 'bold');
     doc.text('Primary Gene Candidate', margin, yPos);
     yPos += 10;
 
     doc.setFontSize(11);
-    doc.setFont(undefined, 'normal');
+    doc.setFont('helvetica', 'normal');
 
     const geneInfo = [
       'Gene: GATAD2B',
@@ -143,12 +152,12 @@ export function ReportsScreen() {
 
     // Phenotypes Observed
     doc.setFontSize(16);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('helvetica', 'bold');
     doc.text('Observed Phenotypes', margin, yPos);
     yPos += 10;
 
     doc.setFontSize(11);
-    doc.setFont(undefined, 'normal');
+    doc.setFont('helvetica', 'normal');
 
     const phenotypes = [
       '• Intellectual disability',
@@ -167,12 +176,12 @@ export function ReportsScreen() {
 
     // Recommendations
     doc.setFontSize(16);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('helvetica', 'bold');
     doc.text('Clinical Recommendations', margin, yPos);
     yPos += 10;
 
     doc.setFontSize(11);
-    doc.setFont(undefined, 'normal');
+    doc.setFont('helvetica', 'normal');
 
     const recommendations = [
       '• Genetic counseling for family members',

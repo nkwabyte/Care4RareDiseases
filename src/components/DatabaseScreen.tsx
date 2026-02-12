@@ -19,9 +19,20 @@ import {
   TableHeader,
   TableRow,
 } from './ui/table';
-import { DATABASE_PATIENTS, DatabasePatient } from '../lib/data/databaseData';
+import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
+import { fetchAllPatients } from '@/lib/store/slices/databaseSlice';
+import { useEffect } from 'react';
+
+// Define interface locally or import from schema/types if available
+interface DatabasePatient {
+  patientId: string;
+  age: number;
+  sex: string;
+  status: 'Pending Analysis' | 'Results Ready' | 'Reviewed';
+  lastUpdated: string;
+  assignedClinician: string;
+}
 import { useAssignedPatients } from '../hooks/useAssignedPatients';
-import { useAuth } from '../contexts/AuthContext';
 
 interface DatabaseScreenProps {
   onPatientClick?: (patientId: string) => void;
@@ -31,8 +42,16 @@ export function DatabaseScreen({ onPatientClick }: DatabaseScreenProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('newest');
-  const { assignedPatientIds, isLoading } = useAssignedPatients();
-  const { doctor } = useAuth();
+  const { assignedPatientIds, isLoading: isLoadingAssigned } = useAssignedPatients();
+  const doctor = useAppSelector((state) => state.auth.doctor);
+  const dispatch = useAppDispatch();
+  const { patients, isLoading: isLoadingDatabase } = useAppSelector((state) => state.database);
+
+  useEffect(() => {
+    dispatch(fetchAllPatients());
+  }, [dispatch]);
+
+  const isLoading = isLoadingAssigned || isLoadingDatabase;
 
   const getStatusColor = (status: DatabasePatient['status']) => {
     switch (status) {
@@ -48,19 +67,23 @@ export function DatabaseScreen({ onPatientClick }: DatabaseScreenProps) {
   };
 
   // Map patients to show current doctor's name
-  const patientsWithCurrentDoctor = DATABASE_PATIENTS.map(patient => ({
+  const patientsWithCurrentDoctor = patients.map((patient: any) => ({
     ...patient,
-    assignedClinician: doctor?.name || patient.assignedClinician
+    patientId: patient.id || patient.patientId,
+    assignedClinician: doctor?.name || patient.assignedClinician || 'Unassigned'
   }));
 
   const filteredAndSortedPatients = patientsWithCurrentDoctor.filter((patient) => {
     // Only show assigned patients
     const isAssignedPatient = assignedPatientIds.includes(patient.patientId);
 
+    // safe string check helper
+    const safeLower = (str: any) => (str || '').toString().toLowerCase();
+
     const matchesSearch =
-      patient.patientId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      patient.assignedClinician.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      patient.sex.toLowerCase().includes(searchQuery.toLowerCase());
+      safeLower(patient.patientId).includes(searchQuery.toLowerCase()) ||
+      safeLower(patient.assignedClinician).includes(searchQuery.toLowerCase()) ||
+      safeLower(patient.sex).includes(searchQuery.toLowerCase());
 
     const matchesStatus =
       statusFilter === 'all' || patient.status === statusFilter;

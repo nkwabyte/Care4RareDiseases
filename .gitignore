@@ -49,15 +49,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# database
-# *.db
-# *.sqlite
-# *.db-shm
-# *.db-wal
-# /data/*.db
-
 # old files
 *.old
-/src
 vite.config.ts
 index.html

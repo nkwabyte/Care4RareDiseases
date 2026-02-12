@@ -2,7 +2,7 @@ import { Card } from './ui/card';
 import { Label } from './ui/label';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Patient } from '../lib/data/patientData';
+import { Patient } from '../lib/types';
 
 interface PatientDemographicsProps {
   patient: Patient;

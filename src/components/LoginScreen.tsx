@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/
 import { Alert, AlertDescription } from './ui/alert';
 
 interface LoginScreenProps {
-  onLoginSuccess: (session: any, doctor: any) => void;
+  onLoginSuccess: (email: string, password: string) => void;
 }
 
 export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
@@ -22,27 +22,11 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || 'Login failed. Please check your credentials.');
-        setIsLoading(false);
-        return;
-      }
-
-      // Login successful
-      onLoginSuccess(data, data.doctor);
-    } catch (err) {
+      // Call the parent's onLoginSuccess which dispatches the Server Action via Redux
+      await onLoginSuccess(email, password);
+    } catch (err: any) {
       console.error('Login error:', err);
-      setError('An error occurred during login. Please try again.');
+      setError(err?.message || 'An error occurred during login. Please try again.');
       setIsLoading(false);
     }
   };
