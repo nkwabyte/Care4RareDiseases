@@ -9,7 +9,7 @@ A Next.js application for managing rare disease patient data with AI-powered ana
 - **State Management**: Redux Toolkit
 - **Authentication**: JWT-based sessions with httpOnly cookies
 - **Styling**: Tailwind CSS + shadcn/ui components
-- **Package Manager**: pnpm
+- **Package Manager**: yarn
 - **Password Hashing**: bcryptjs
 - **TypeScript**: Full type safety
 
@@ -27,7 +27,7 @@ A Next.js application for managing rare disease patient data with AI-powered ana
 ### Prerequisites
 
 - Node.js 18+ 
-- pnpm (recommended) or npm
+- yarn (recommended) or npm
 
 ### 1. Clone and Install
 
@@ -36,7 +36,7 @@ A Next.js application for managing rare disease patient data with AI-powered ana
 cd Care4RareDiseases
 
 # Install dependencies
-pnpm install
+yarn install
 ```
 
 > **Note**: If you encounter permission errors with `node_modules`, run:
@@ -66,7 +66,7 @@ NODE_ENV=development
 #### Push Schema to Database
 
 ```bash
-pnpm db:push
+yarn db:push
 ```
 
 This creates all necessary tables in the SQLite database.
@@ -74,7 +74,7 @@ This creates all necessary tables in the SQLite database.
 #### Seed Initial Data
 
 ```bash
-pnpm db:seed
+yarn db:seed
 ```
 
 This populates the database with:
@@ -85,7 +85,7 @@ This populates the database with:
 ### 4. Start Development Server
 
 ```bash
-pnpm dev
+yarn dev
 ```
 
 The application will be available at **http://localhost:3000**
@@ -256,17 +256,17 @@ Doctor-patient relationships
 
 ```bash
 # Development
-pnpm dev              # Start development server
-pnpm build            # Build for production
-pnpm start            # Start production server
-pnpm lint             # Run ESLint
+yarn dev              # Start development server
+yarn build            # Build for production
+yarn start            # Start production server
+yarn lint             # Run ESLint
 
 # Database
-pnpm db:generate      # Generate Drizzle migrations
-pnpm db:push          # Push schema to database
-pnpm db:seed          # Seed database with initial data
-pnpm db:studio        # Open Drizzle Studio (database GUI)
-pnpm db:migrate       # Run migrations (alternative to push)
+yarn db:generate      # Generate Drizzle migrations
+yarn db:push          # Push schema to database
+yarn db:seed          # Seed database with initial data
+yarn db:studio        # Open Drizzle Studio (database GUI)
+yarn db:migrate       # Run migrations (alternative to push)
 ```
 
 ## 🔧 Drizzle Studio
@@ -274,7 +274,7 @@ pnpm db:migrate       # Run migrations (alternative to push)
 View and manage your database visually:
 
 ```bash
-pnpm db:studio
+yarn db:studio
 ```
 
 This opens Drizzle Studio at `https://local.drizzle.studio`
@@ -291,7 +291,7 @@ sudo chown -R $(whoami) /Users/musahibrahimali/Dev/typescript/Care4RareDiseases
 
 # Reinstall dependencies
 rm -rf node_modules
-pnpm install
+yarn install
 ```
 
 ### Database Issues
@@ -303,8 +303,8 @@ Reset the database:
 rm data/care4rare.db
 
 # Recreate and seed
-pnpm db:push
-pnpm db:seed
+yarn db:push
+yarn db:seed
 ```
 
 ### Database Locked
@@ -320,7 +320,7 @@ If you get "database is locked" errors:
 Run on a different port:
 
 ```bash
-pnpm dev -- -p 3001
+yarn dev -- -p 3001
 ```
 
 ## 🚢 Deployment
@@ -338,10 +338,10 @@ NODE_ENV=production
 
 ```bash
 # Build the application
-pnpm build
+yarn build
 
 # Start production server
-pnpm start
+yarn start
 ```
 
 ## 📚 Documentation

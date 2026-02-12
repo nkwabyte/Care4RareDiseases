@@ -12,6 +12,7 @@
 
 .pnpm-store/
 .npm-cache/
+.yarn-cache/
 
 .npm/
 .yarn/
@@ -49,11 +50,11 @@ yarn-error.log*
 next-env.d.ts
 
 # database
-*.db
-*.sqlite
-*.db-shm
-*.db-wal
-/data/*.db
+# *.db
+# *.sqlite
+# *.db-shm
+# *.db-wal
+# /data/*.db
 
 # old files
 *.old
