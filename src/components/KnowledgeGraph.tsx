@@ -1,5 +1,5 @@
 import { Card } from './ui/card';
-import { KnowledgeGraphData } from '../lib/data/patientData';
+import { KnowledgeGraphData } from '../lib/types';
 
 interface KnowledgeGraphProps {
   graphData?: KnowledgeGraphData;

@@ -13,12 +13,14 @@ import {
   SelectValue,
 } from './ui/select';
 import { User, Bell, Eye, Shield, Database, Palette, LogOut } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
-import { toast } from 'sonner@2.0.3';
+import { useAppSelector, useAppDispatch } from '@/lib/store/hooks';
+import { logout } from '@/lib/store/slices/authSlice';
+import { toast } from 'sonner';
 
 export function SettingsScreen() {
-  const { doctor, logout } = useAuth();
-  
+  const dispatch = useAppDispatch();
+  const doctor = useAppSelector((state) => state.auth.doctor);
+
   // User Profile
   const [fullName, setFullName] = useState(doctor?.name || '');
   const [email, setEmail] = useState(doctor?.email || '');
@@ -55,7 +57,7 @@ export function SettingsScreen() {
   };
 
   const handleLogout = async () => {
-    await logout();
+    await dispatch(logout());
     toast.success('Logged out successfully', {
       description: 'You have been securely logged out.',
     });

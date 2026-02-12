@@ -29,44 +29,21 @@ import {
   Legend,
   Tooltip,
 } from 'recharts';
-import { useAuth } from '../contexts/AuthContext';
-import { useAssignedPatients } from '../hooks/useAssignedPatients';
-import { DATABASE_PATIENTS } from '../lib/data/databaseData';
-import { REPORTS } from '../lib/data/reportsData';
+import { useAppSelector } from '@/lib/store/hooks';
 
 interface DashboardScreenProps {
   onNavigateToPatients?: () => void;
 }
 
 export function DashboardScreen({ onNavigateToPatients }: DashboardScreenProps) {
-  const { doctor } = useAuth();
-  const { assignedPatientIds } = useAssignedPatients();
+  const doctor = useAppSelector((state) => state.auth.doctor);
 
-  // Calculate metrics based on assigned patients
-  const assignedPatientsData = DATABASE_PATIENTS.filter(p =>
-    assignedPatientIds.includes(p.patientId)
-  );
-
-  const pendingAnalysisCount = assignedPatientsData.filter(p =>
-    p.status === 'Pending Analysis'
-  ).length;
-
-  const resultsReadyCount = assignedPatientsData.filter(p =>
-    p.status === 'Results Ready'
-  ).length;
-
-  const reviewedCount = assignedPatientsData.filter(p =>
-    p.status === 'Reviewed'
-  ).length;
-
-  // Get reports for assigned patients (this month)
-  const assignedReportsThisMonth = REPORTS.filter(r => {
-    const isAssigned = assignedPatientIds.includes(r.patientId);
-    const reportDate = new Date(r.dateGenerated);
-    const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
-    return isAssigned && reportDate.getMonth() === currentMonth && reportDate.getFullYear() === currentYear;
-  }).length;
+  // Mock data for demo - in production, fetch from database via Server Actions
+  const assignedPatientIds: string[] = [];
+  const pendingAnalysisCount: number = 0;
+  const resultsReadyCount: number = 0;
+  const reviewedCount: number = 0;
+  const assignedReportsThisMonth: number = 0;
   // Mock data for charts
   const monthlyDiagnosesData = [
     { month: 'Apr', diagnosed: 12, pending: 8 },
@@ -85,6 +62,9 @@ export function DashboardScreen({ onNavigateToPatients }: DashboardScreenProps) 
     { category: 'Cardiovascular', count: 18 },
     { category: 'Other', count: 12 },
   ];
+
+  const assignedPatientsData: any[] = [];
+  const pendingCases: any[] = [];
 
   // Recent activity filtered to assigned patients only
   const allActivity = [
@@ -126,27 +106,6 @@ export function DashboardScreen({ onNavigateToPatients }: DashboardScreenProps) 
     assignedPatientIds.includes(activity.patient)
   );
 
-  // Get pending cases from assigned patients with priority
-  const pendingCases = assignedPatientsData
-    .filter(p => p.status === 'Pending Analysis' || p.status === 'Results Ready')
-    .map(p => {
-      const daysWaiting = Math.floor(
-        (new Date().getTime() - new Date(p.lastUpdated).getTime()) / (1000 * 60 * 60 * 24)
-      );
-      // Assign priority based on days waiting
-      let priority: 'High' | 'Medium' | 'Low' = 'Low';
-      if (daysWaiting >= 5) priority = 'High';
-      else if (daysWaiting >= 2) priority = 'Medium';
-
-      return {
-        patientId: p.patientId,
-        age: p.age,
-        status: p.status,
-        priority,
-        daysWaiting,
-      };
-    })
-    .sort((a, b) => b.daysWaiting - a.daysWaiting); // Sort by days waiting (descending)
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -402,7 +361,7 @@ export function DashboardScreen({ onNavigateToPatients }: DashboardScreenProps) 
                   ) : (
                     recentActivity.map((activity) => (
                       <div key={activity.id} className="flex items-start gap-3">
-                        <div className="w-8 h-8 bg-[#2d1b4e] rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <div className="w-8 h-8 bg-[#2d1b4e] rounded-lg flex items-center justify-center shrink-0 mt-0.5">
                           {getActivityIcon(activity.type)}
                         </div>
                         <div className="flex-1 min-w-0">

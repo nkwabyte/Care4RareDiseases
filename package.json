@@ -12,9 +12,11 @@
     "db:migrate": "yarn db:generate && yarn db:apply",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:seed": "yarn tsx src/lib/db/seed-drizzle.ts"
+    "db:seed": "yarn tsx src/lib/db/seed-drizzle.ts",
+    "db:seed-all": "yarn db:seed"
   },
   "dependencies": {
+    "@google/genai": "^1.41.0",
     "@radix-ui/react-accordion": "^1.2.3",
     "@radix-ui/react-alert-dialog": "^1.1.6",
     "@radix-ui/react-aspect-ratio": "^1.1.2",
@@ -58,6 +60,7 @@
     "react-day-picker": "^8.10.1",
     "react-dom": "^19.2.4",
     "react-hook-form": "^7.55.0",
+    "react-markdown": "^10.1.0",
     "react-redux": "^9.1.0",
     "react-resizable-panels": "^2.1.7",
     "recharts": "^2.15.2",

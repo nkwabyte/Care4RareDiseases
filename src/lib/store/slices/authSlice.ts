@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { loginAction, logoutAction, getSessionAction, type AuthUser } from '@/lib/actions/auth';
 
 interface Doctor {
     id: number;
@@ -26,19 +27,13 @@ export const login = createAsyncThunk(
     'auth/login',
     async ({ email, password }: { email: string; password: string }, { rejectWithValue }) => {
         try {
-            const response = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
-            });
+            const result = await loginAction(email, password);
 
-            if (!response.ok) {
-                const error = await response.json();
-                return rejectWithValue(error.error || 'Login failed');
+            if (!result.success) {
+                return rejectWithValue(result.error || 'Login failed');
             }
 
-            const data = await response.json();
-            return data.doctor;
+            return result.user as Doctor;
         } catch (error) {
             return rejectWithValue('Network error');
         }
@@ -48,11 +43,9 @@ export const login = createAsyncThunk(
 // Async thunk for logout
 export const logout = createAsyncThunk('auth/logout', async (_, { rejectWithValue }) => {
     try {
-        const response = await fetch('/api/auth/logout', {
-            method: 'POST',
-        });
+        const result = await logoutAction();
 
-        if (!response.ok) {
+        if (!result.success) {
             return rejectWithValue('Logout failed');
         }
 
@@ -65,14 +58,13 @@ export const logout = createAsyncThunk('auth/logout', async (_, { rejectWithValu
 // Async thunk for checking session
 export const checkSession = createAsyncThunk('auth/checkSession', async (_, { rejectWithValue }) => {
     try {
-        const response = await fetch('/api/auth/session');
+        const result = await getSessionAction();
 
-        if (!response.ok) {
+        if (!result.success) {
             return rejectWithValue('Not authenticated');
         }
 
-        const data = await response.json();
-        return data.doctor;
+        return result.user as Doctor;
     } catch (error) {
         return rejectWithValue('Network error');
     }
