@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1770230955391,
+      "tag": "0000_previous_tusk",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1770902035551,
+      "tag": "0001_swift_invisible_woman",
+      "breakpoints": true
+    }
+  ]
+}
