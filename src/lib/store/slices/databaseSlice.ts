@@ -87,7 +87,7 @@ const databaseSlice = createSlice({
             })
             .addCase(fetchPatientStats.fulfilled, (state, action) => {
                 state.isLoading = false;
-                state.stats = action.payload;
+                state.stats = action.payload || null;
                 state.error = null;
             })
             .addCase(fetchPatientStats.rejected, (state, action) => {
