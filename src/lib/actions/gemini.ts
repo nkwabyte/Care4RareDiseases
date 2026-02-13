@@ -99,3 +99,43 @@ export async function chatWithAIAction(history: { role: 'user' | 'model'; parts:
         return { success: false, error: 'Failed to process message' };
     }
 }
+
+export async function generateGenotypePhenotypeAnalysis(patientData: any): Promise<{ success: boolean; analysis?: string; error?: string }> {
+    try {
+        if (!API_KEY) {
+            return { success: false, error: 'API key not configured' };
+        }
+
+        const prompt = `
+Analyze the relationship between the following patient's genotype and phenotype.
+Using the Gemini 2.5 Pro model, provide a detailed explanation of how the specific genetic variants likely contribute to the observed clinical phenotypes.
+
+Patient Data:
+- Gene: ${patientData.variantInfo?.gene || 'Unknown'}
+- Variant: ${patientData.variantInfo?.cdnaChange || 'Unknown'} (${patientData.variantInfo?.proteinChange || 'Unknown'})
+- Pathogenicity: ${patientData.variantInfo?.pathogenicity || 'Unknown'}
+- Inheritance: ${patientData.variantInfo?.inheritance || 'Unknown'}
+- Phenotypes: ${JSON.stringify(patientData.phenotypes || [])}
+- Clinical Notes: ${patientData.clinicalNotes || 'None'}
+
+Please structure your response with the following sections using Markdown:
+1. **Genotype-Phenotype Correlation**: Explain the mechanism by which the gene defect leads to the symptoms.
+2. **Variant Impact**: Specific impact of this variant (e.g., loss of function, gain of function).
+3. **Consistency**: Are the observed phenotypes consistent with this gene's known spectrum?
+4. **References**: Cite relevant medical literature or databases if applicable (e.g., OMIM, ClinVar).
+
+Keep the analysis clinical and precise.
+`;
+
+        const result = await ai.models.generateContent({
+            model: 'gemini-2.5-pro',
+            contents: [{ role: 'user', parts: [{ text: prompt }] }]
+        });
+        const text = result.text;
+
+        return { success: true, analysis: text };
+    } catch (error) {
+        console.error('Genotype-Phenotype Analysis error:', error);
+        return { success: false, error: 'Failed to generate analysis' };
+    }
+}

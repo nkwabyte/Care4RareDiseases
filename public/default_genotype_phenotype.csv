@@ -1,0 +1,7 @@
+Patient_ID,Phenotype_HPO_ID,Phenotype_Name,Gene_Symbol,Variant_cDNA,Variant_Protein,Zygosity,Pathogenicity
+UDN-P4,HP:0001300,Parkinsonism,PARK2,c.81delA,p.Lys27Argfs*4,HOM,Pathogenic
+UDN-P4,HP:0002015,Dysphagia,PARK2,c.81delA,p.Lys27Argfs*4,HOM,Pathogenic
+UDN-P4,HP:0001260,Dysarthria,PARK2,c.81delA,p.Lys27Argfs*4,HOM,Pathogenic
+UDN-P4,HP:0002300,Tremor,PARK2,c.81delA,p.Lys27Argfs*4,HOM,Pathogenic
+UDN-P4,HP:0002063,Rigidity,PARK2,c.81delA,p.Lys27Argfs*4,HOM,Pathogenic
+UDN-P4,HP:0001250,Seizures,PARK2,c.81delA,p.Lys27Argfs*4,HOM,Pathogenic
