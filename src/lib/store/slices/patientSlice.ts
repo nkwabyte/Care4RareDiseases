@@ -1,9 +1,17 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 
+interface ChatMessage {
+    id: string;
+    role: 'user' | 'model';
+    text: string;
+}
+
 interface PatientState {
     assignedPatientIds: string[];
     selectedPatientId: string | null;
     currentPatient: any | null; // Typed loosely for now, should use Patient type
+    currentReport: string | null;
+    chatHistory: ChatMessage[];
     isLoading: boolean;
     error: string | null;
 }
@@ -12,6 +20,8 @@ const initialState: PatientState = {
     assignedPatientIds: [],
     selectedPatientId: null,
     currentPatient: null,
+    currentReport: null,
+    chatHistory: [],
     isLoading: false,
     error: null,
 };
@@ -71,6 +81,18 @@ const patientSlice = createSlice({
         },
         clearSelectedPatient: (state) => {
             state.selectedPatientId = null;
+            state.currentReport = null;
+            state.chatHistory = [];
+        },
+        setCurrentReport: (state, action: PayloadAction<string>) => {
+            state.currentReport = action.payload;
+        },
+        addChatMessage: (state, action: PayloadAction<ChatMessage>) => {
+            state.chatHistory.push(action.payload);
+        },
+        clearChat: (state) => {
+            state.chatHistory = [];
+            state.currentReport = null;
         },
     },
     extraReducers: (builder) => {
@@ -109,5 +131,5 @@ const patientSlice = createSlice({
     },
 });
 
-export const { setSelectedPatient, clearSelectedPatient } = patientSlice.actions;
+export const { setSelectedPatient, clearSelectedPatient, setCurrentReport, addChatMessage, clearChat } = patientSlice.actions;
 export default patientSlice.reducer;

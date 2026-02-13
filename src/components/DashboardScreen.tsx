@@ -46,13 +46,13 @@ export function DashboardScreen({ onNavigateToPatients }: DashboardScreenProps) 
   const assignedReportsThisMonth: number = 0;
   // Mock data for charts
   const monthlyDiagnosesData = [
-    { month: 'Apr', diagnosed: 12, pending: 8 },
-    { month: 'May', diagnosed: 15, pending: 6 },
-    { month: 'Jun', diagnosed: 18, pending: 10 },
-    { month: 'Jul', diagnosed: 14, pending: 7 },
-    { month: 'Aug', diagnosed: 20, pending: 9 },
-    { month: 'Sep', diagnosed: 22, pending: 5 },
-    { month: 'Oct', diagnosed: 19, pending: 11 },
+    { month: 'Aug', diagnosed: 12, pending: 8 },
+    { month: 'Sep', diagnosed: 15, pending: 6 },
+    { month: 'Oct', diagnosed: 18, pending: 10 },
+    { month: 'Nov', diagnosed: 14, pending: 7 },
+    { month: 'Dec', diagnosed: 20, pending: 9 },
+    { month: 'Jan', diagnosed: 22, pending: 5 },
+    { month: 'Feb', diagnosed: 19, pending: 11 },
   ];
 
   const diseaseDistributionData = [

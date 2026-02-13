@@ -17,11 +17,17 @@ import { ClinicalNotes } from '@/components/ClinicalNotes';
 import { CaseActivityHistory, Activity } from '@/components/CaseActivityHistory';
 import { NewPatientDialog } from '@/components/NewPatientDialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText } from 'lucide-react';
+import { FileText, Play } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { startAnalysis, updateAnalysisProgress, completeAnalysis } from '@/lib/store/slices/uiSlice';
 import { AIReportGenerator } from '@/components/AIReportGenerator';
+import { PatientDemographics } from '@/components/PatientDemographics';
+import { ClinicalPhenotypes } from '@/components/ClinicalPhenotypes';
+import { DNAStructureVisualization } from '@/components/DNAStructureVisualization';
+import { GenotypePhenotypeAnalysis } from '@/components/GenotypePhenotypeAnalysis';
+import { GenotypePhenotypeUpload } from '@/components/GenotypePhenotypeUpload';
 
 export default function PatientsPage() {
     const router = useRouter();
@@ -55,14 +61,29 @@ export default function PatientsPage() {
     const handleRunAnalysis = () => {
         dispatch(startAnalysis());
 
+        let progress = 0;
+        const totalDuration = 3000; // 3 seconds
+        const intervalTime = 50;
+        const steps = totalDuration / intervalTime;
+        const increment = 100 / steps;
+
         const progressInterval = setInterval(() => {
-            dispatch(updateAnalysisProgress(Math.min(analysisProgress + 0.8, 100)));
-        }, 100);
+            progress += increment;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(progressInterval);
+            }
+            dispatch(updateAnalysisProgress(progress));
+        }, intervalTime);
 
         setTimeout(() => {
             clearInterval(progressInterval);
-            dispatch(completeAnalysis());
-        }, 12000);
+            dispatch(updateAnalysisProgress(100)); // Ensure it hits 100%
+            setTimeout(() => { // Small delay to see 100%
+                dispatch(completeAnalysis());
+                dispatch(setActiveTab('analysis'));
+            }, 500);
+        }, totalDuration);
     };
 
     const handleSaveNote = (note: string) => {
@@ -165,6 +186,9 @@ export default function PatientsPage() {
                                                 <KnowledgeGraph graphData={patientData.knowledgeGraph} />
                                             </div>
                                         </div>
+                                        <div className="mt-8">
+                                            <GenotypePhenotypeAnalysis patientData={patientData} />
+                                        </div>
                                         <div className="mt-6 space-y-6">
                                             <PatientLikeMeComparison gene={patientData.variantInfo?.gene} />
                                             <DetailedGeneticsReport />
@@ -185,8 +209,25 @@ export default function PatientsPage() {
                             </TabsContent>
 
                             <TabsContent value="info" className="flex-1 overflow-auto p-6 m-0 focus-visible:ring-0 focus-visible:outline-none">
-                                <div className="flex items-center justify-center h-full text-slate-500">
-                                    Patient Info View (Placeholder)
+                                <div className="max-w-7xl mx-auto pb-10">
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                        <div className="space-y-6">
+                                            <PatientDemographics patient={patientData} />
+                                            <DNAStructureVisualization variantInfo={patientData.variantInfo} />
+                                        </div>
+                                        <div className="space-y-6">
+                                            <GenotypePhenotypeUpload />
+                                            <ClinicalPhenotypes initialPhenotypes={patientData.phenotypes} />
+
+                                            <Button
+                                                onClick={handleRunAnalysis}
+                                                className="w-full bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0 py-6"
+                                            >
+                                                <Play className="w-5 h-5 mr-2 fill-current" />
+                                                Run Analysis
+                                            </Button>
+                                        </div>
+                                    </div>
                                 </div>
                             </TabsContent>
                         </>
