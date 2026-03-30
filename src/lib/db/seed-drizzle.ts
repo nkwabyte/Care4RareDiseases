@@ -1,6 +1,6 @@
 import { db } from './index.js';
 import { users } from './schema.js';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 console.log('Starting database seeding...\n');
 
