@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import { checkSession } from '@/lib/store/slices/authSlice';
-import { Sidebar } from '@/components/Sidebar';
+import { Sidebar } from '@/components/layout';
 
 export default function ProtectedLayout({
     children,

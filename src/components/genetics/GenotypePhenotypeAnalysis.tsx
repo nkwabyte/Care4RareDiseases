@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { generateGenotypePhenotypeAnalysis } from '@/lib/actions/gemini';
 import ReactMarkdown from 'react-markdown';
 import { Loader2, RefreshCw, Stethoscope } from 'lucide-react';

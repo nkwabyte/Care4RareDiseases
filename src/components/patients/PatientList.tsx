@@ -1,10 +1,10 @@
 import { useState, useMemo } from 'react';
 import { Search, Plus } from 'lucide-react';
-import { Input } from './ui/input';
-import { ScrollArea } from './ui/scroll-area';
-import { Button } from './ui/button';
-import { Skeleton } from './ui/skeleton';
-import { useAssignedPatients } from '../hooks/useAssignedPatients';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useAssignedPatients } from '@/hooks/useAssignedPatients';
 
 interface PatientListProps {
   selectedPatientId: string;

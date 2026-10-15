@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Card } from './ui/card';
-import { Input } from './ui/input';
-import { Button } from './ui/button';
-import { Skeleton } from './ui/skeleton';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Download, Search, Calendar } from 'lucide-react';
 import {
   Table,
@@ -11,11 +11,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from './ui/table';
+} from '@/components/ui/table';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import { fetchReports } from '@/lib/store/slices/reportsSlice';
 import { useEffect } from 'react';
-import { useAssignedPatients } from '../hooks/useAssignedPatients';
+import { useAssignedPatients } from '@/hooks/useAssignedPatients';
 import jsPDF from 'jspdf';
 
 export function ReportsScreen() {

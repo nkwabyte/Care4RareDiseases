@@ -1,6 +1,6 @@
-import { Card } from './ui/card';
-import { Badge } from './ui/badge';
-import { Button } from './ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Activity,
   Users,
@@ -16,7 +16,7 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from './ui/chart';
+} from '@/components/ui/chart';
 import {
   BarChart,
   Bar,

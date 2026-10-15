@@ -1,17 +1,17 @@
 import { useState } from 'react';
-import { Card } from './ui/card';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Button } from './ui/button';
-import { Switch } from './ui/switch';
-import { Separator } from './ui/separator';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from './ui/select';
+} from '@/components/ui/select';
 import { User, Bell, Eye, Shield, Database, Palette, LogOut } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '@/lib/store/hooks';
 import { logout } from '@/lib/store/slices/authSlice';

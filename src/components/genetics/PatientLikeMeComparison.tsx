@@ -1,7 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Badge } from "./ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Users, TrendingUp, AlertCircle, CheckCircle2, ExternalLink, AlertTriangle, XCircle } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 
 interface PatientLikeMeComparisonProps {
   gene?: string;

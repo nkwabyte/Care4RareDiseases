@@ -1,6 +1,6 @@
-import { Card } from './ui/card';
-import { Badge } from './ui/badge';
-import { VariantInfo } from '../lib/types';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { VariantInfo } from '@/lib/types';
 
 interface DNAStructureVisualizationProps {
   variantInfo?: VariantInfo;

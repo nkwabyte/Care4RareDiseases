@@ -1,7 +1,7 @@
 'use client';
 
-import { Sidebar } from '@/components/Sidebar';
-import { ReportsScreen } from '@/components/ReportsScreen';
+import { Sidebar } from '@/components/layout';
+import { ReportsScreen } from '@/components/screens';
 import { useAppDispatch } from '@/lib/store/hooks';
 import { setActiveScreen } from '@/lib/store/slices/uiSlice';
 import { useRouter } from 'next/navigation';

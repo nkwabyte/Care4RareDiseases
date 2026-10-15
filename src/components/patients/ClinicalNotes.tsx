@@ -1,9 +1,9 @@
-import { Card } from './ui/card';
-import { Button } from './ui/button';
-import { Textarea } from './ui/textarea';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { Bold, Italic, Underline, List, ListOrdered } from 'lucide-react';
-import { Separator } from './ui/separator';
-import { useState, useEffect } from 'react';
+import { Separator } from '@/components/ui/separator';
+import { useState } from 'react';
 
 interface ClinicalNotesProps {
   initialNotes?: string;
@@ -12,17 +12,18 @@ interface ClinicalNotesProps {
 
 export function ClinicalNotes({ initialNotes = '', onSaveNote }: ClinicalNotesProps) {
   const [noteContent, setNoteContent] = useState(initialNotes);
-  const [hasChanges, setHasChanges] = useState(false);
+  const [prevInitialNotes, setPrevInitialNotes] = useState(initialNotes);
 
-  // Track changes
-  useEffect(() => {
-    setHasChanges(noteContent !== initialNotes);
-  }, [noteContent, initialNotes]);
+  if (initialNotes !== prevInitialNotes) {
+    setPrevInitialNotes(initialNotes);
+    setNoteContent(initialNotes);
+  }
+
+  const hasChanges = noteContent !== initialNotes;
 
   const handleSave = () => {
     if (hasChanges && onSaveNote) {
       onSaveNote(noteContent);
-      setHasChanges(false);
     }
   };
 

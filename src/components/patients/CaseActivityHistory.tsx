@@ -1,5 +1,5 @@
-import { Card } from './ui/card';
-import { ScrollArea } from './ui/scroll-area';
+import { Card } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { FileText, Download, Eye, Play, UserPlus, LucideIcon } from 'lucide-react';
 
 export interface Activity {

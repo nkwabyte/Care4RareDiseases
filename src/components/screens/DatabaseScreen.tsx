@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Card } from './ui/card';
-import { Input } from './ui/input';
-import { Badge } from './ui/badge';
-import { Skeleton } from './ui/skeleton';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Search } from 'lucide-react';
 import {
   Select,
@@ -10,7 +10,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from './ui/select';
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -18,7 +18,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from './ui/table';
+} from '@/components/ui/table';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import { fetchAllPatients } from '@/lib/store/slices/databaseSlice';
 import { useEffect } from 'react';
@@ -32,7 +32,7 @@ interface DatabasePatient {
   lastUpdated: string;
   assignedClinician: string;
 }
-import { useAssignedPatients } from '../hooks/useAssignedPatients';
+import { useAssignedPatients } from '@/hooks/useAssignedPatients';
 
 interface DatabaseScreenProps {
   onPatientClick?: (patientId: string) => void;

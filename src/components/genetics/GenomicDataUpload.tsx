@@ -1,6 +1,6 @@
-import { Card } from './ui/card';
+import { Card } from '@/components/ui/card';
 import { Upload } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface GenomicDataUploadProps {
   genomicFile?: string;
@@ -9,11 +9,13 @@ interface GenomicDataUploadProps {
 export function GenomicDataUpload({ genomicFile }: GenomicDataUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<string | null>(genomicFile || null);
+  const [prevGenomicFile, setPrevGenomicFile] = useState<string | undefined>(genomicFile);
 
   // Update uploaded file when patient changes
-  useEffect(() => {
+  if (genomicFile !== prevGenomicFile) {
+    setPrevGenomicFile(genomicFile);
     setUploadedFile(genomicFile || null);
-  }, [genomicFile]);
+  }
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();

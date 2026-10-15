@@ -18,6 +18,25 @@
 .yarn/
 .yarn/
 
+.agent/
+.claude/
+.gemini/
+.grok/
+.copilot/
+.codex/
+.agents/
+
+.impeccable/
+.hermes/
+.opencode/
+
+.github/prompts/
+.github/agent/
+.github/agents/
+.github/hooks/
+
+
+
 
 # testing
 /coverage

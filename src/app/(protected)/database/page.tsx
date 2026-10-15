@@ -1,7 +1,7 @@
 'use client';
 
-import { Sidebar } from '@/components/Sidebar';
-import { DatabaseScreen } from '@/components/DatabaseScreen';
+import { Sidebar } from '@/components/layout';
+import { DatabaseScreen } from '@/components/screens';
 import { useAppDispatch } from '@/lib/store/hooks';
 import { setActiveScreen } from '@/lib/store/slices/uiSlice';
 import { setSelectedPatient } from '@/lib/store/slices/patientSlice';

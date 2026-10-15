@@ -1,9 +1,9 @@
-import { Card } from './ui/card';
-import { Label } from './ui/label';
-import { Input } from './ui/input';
-import { Badge } from './ui/badge';
+import { Card } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
-import { useState, KeyboardEvent, useEffect } from 'react';
+import { useState, KeyboardEvent } from 'react';
 
 const SAMPLE_TERMS = [
   'Limb hypertonia',
@@ -26,12 +26,14 @@ interface ClinicalPhenotypesProps {
 
 export function ClinicalPhenotypes({ initialPhenotypes = [] }: ClinicalPhenotypesProps) {
   const [selectedTerms, setSelectedTerms] = useState<string[]>(initialPhenotypes);
+  const [prevInitialPhenotypes, setPrevInitialPhenotypes] = useState<string[]>(initialPhenotypes);
   const [inputValue, setInputValue] = useState('');
 
   // Update selected terms when patient changes
-  useEffect(() => {
+  if (initialPhenotypes !== prevInitialPhenotypes) {
+    setPrevInitialPhenotypes(initialPhenotypes);
     setSelectedTerms(initialPhenotypes);
-  }, [initialPhenotypes]);
+  }
 
   const addTerm = (term: string) => {
     const trimmedTerm = term.trim();

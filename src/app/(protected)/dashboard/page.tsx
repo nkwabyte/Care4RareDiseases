@@ -1,7 +1,7 @@
 'use client';
 
-import { DashboardScreen } from '@/components/DashboardScreen';
-import { Sidebar } from '@/components/Sidebar';
+import { DashboardScreen } from '@/components/screens';
+import { Sidebar } from '@/components/layout';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import { setActiveScreen } from '@/lib/store/slices/uiSlice';
 import { useRouter } from 'next/navigation';

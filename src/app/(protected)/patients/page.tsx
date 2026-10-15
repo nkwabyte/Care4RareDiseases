@@ -1,33 +1,38 @@
 'use client';
 
 import { useEffect } from 'react';
-import { Sidebar } from '@/components/Sidebar';
-import { PatientList } from '@/components/PatientList';
+import { Sidebar } from '@/components/layout';
+import {
+    PatientList,
+    DiagnosticSummary,
+    PatientPhenotypes,
+    ClinicalNotes,
+    CaseActivityHistory,
+    Activity,
+    NewPatientDialog,
+    PatientDemographics,
+    ClinicalPhenotypes,
+} from '@/components/patients';
+import {
+    TopCandidateGenes,
+    KnowledgeGraph,
+    PatientLikeMeComparison,
+    DetailedGeneticsReport,
+    AIReportGenerator,
+    DNAStructureVisualization,
+    GenotypePhenotypeAnalysis,
+    GenotypePhenotypeUpload,
+} from '@/components/genetics';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import { setActiveScreen, setActiveTab, setNewPatientDialogOpen } from '@/lib/store/slices/uiSlice';
 import { fetchAssignedPatients, setSelectedPatient, fetchPatientDetails } from '@/lib/store/slices/patientSlice';
 import { useRouter } from 'next/navigation';
-import { DiagnosticSummary } from '@/components/DiagnosticSummary';
-import { PatientPhenotypes } from '@/components/PatientPhenotypes';
-import { TopCandidateGenes } from '@/components/TopCandidateGenes';
-import { KnowledgeGraph } from '@/components/KnowledgeGraph';
-import { PatientLikeMeComparison } from '@/components/PatientLikeMeComparison';
-import { DetailedGeneticsReport } from '@/components/DetailedGeneticsReport';
-import { ClinicalNotes } from '@/components/ClinicalNotes';
-import { CaseActivityHistory, Activity } from '@/components/CaseActivityHistory';
-import { NewPatientDialog } from '@/components/NewPatientDialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileText, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { startAnalysis, updateAnalysisProgress, completeAnalysis } from '@/lib/store/slices/uiSlice';
-import { AIReportGenerator } from '@/components/AIReportGenerator';
-import { PatientDemographics } from '@/components/PatientDemographics';
-import { ClinicalPhenotypes } from '@/components/ClinicalPhenotypes';
-import { DNAStructureVisualization } from '@/components/DNAStructureVisualization';
-import { GenotypePhenotypeAnalysis } from '@/components/GenotypePhenotypeAnalysis';
-import { GenotypePhenotypeUpload } from '@/components/GenotypePhenotypeUpload';
 
 export default function PatientsPage() {
     const router = useRouter();

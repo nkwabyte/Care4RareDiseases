@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppDispatch } from '@/lib/store/hooks';
 import { login } from '@/lib/store/slices/authSlice';
-import { LoginScreen } from '@/components/LoginScreen';
+import { LoginScreen } from '@/components/auth';
 
 export default function LoginPage() {
     const router = useRouter();
