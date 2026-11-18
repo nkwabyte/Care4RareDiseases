@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, FileText, Bot, Send, User, Sparkles } from 'lucide-react';
+import { ArrowLeft, FileText, Bot, Send, User } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { useState, useRef, useEffect } from 'react';
 import { addChatMessage } from '@/lib/store/slices/patientSlice';
@@ -85,32 +85,29 @@ export default function PatientReportPage() {
     if (!currentReport) return null;
 
     return (
-        <div className="h-screen flex flex-col bg-background text-slate-200 overflow-hidden">
+        <div className="h-screen flex flex-col bg-background text-foreground overflow-hidden">
             {/* Header - Fixed Height */}
-            <header className="h-16 border-b border-purple-900/20 bg-card flex items-center px-6 shrink-0 gap-4 z-10 relative">
+            <header className="h-16 border-b border-border bg-card flex items-center px-6 shrink-0 gap-4 z-10 relative">
                 <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => router.back()}
-                    className="hover:bg-purple-900/20 text-slate-400 hover:text-white"
+                    className="hover:bg-muted text-muted-foreground hover:text-foreground"
                 >
                     <ArrowLeft className="w-5 h-5" />
                 </Button>
                 <div>
-                    <h1 className="text-lg font-semibold text-white flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-purple-400" />
-                        AI Analysis Report
-                    </h1>
-                    <p className="text-xs text-slate-400">Patient ID: {selectedPatientId}</p>
+                    <h1 className="text-2xl font-bold tracking-[-0.01em] text-foreground">Draft diagnostic report</h1>
+                    <p className="text-sm text-muted-foreground">{selectedPatientId} · AI-assisted draft for clinician review</p>
                 </div>
             </header>
 
             {/* Content Grid - Takes remaining height */}
-            <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 min-h-0 text-slate-200">
+            <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 min-h-0 text-foreground">
                 {/* Left: Report View - Independent Scroll */}
-                <div className="border-r border-purple-900/20 flex flex-col h-full min-h-0 bg-card">
-                    <div className="p-4 border-b border-purple-900/10 bg-secondary/50 flex items-center justify-between shrink-0">
-                        <div className="flex items-center gap-2 text-sm font-medium text-purple-300">
+                <div className="border-r border-border flex flex-col h-full min-h-0 bg-card">
+                    <div className="p-4 border-b border-border bg-secondary/50 flex items-center justify-between shrink-0">
+                        <div className="flex items-center gap-2 text-sm font-medium text-primary">
                             <FileText className="w-4 h-4" />
                             Generated Report
                         </div>
@@ -124,8 +121,8 @@ export default function PatientReportPage() {
 
                 {/* Right: Chat Interface - Independent Scroll */}
                 <div className="flex flex-col h-full min-h-0 bg-background">
-                    <div className="p-4 border-b border-purple-900/10 bg-secondary/50 flex items-center justify-between shrink-0">
-                        <div className="flex items-center gap-2 text-sm font-medium text-emerald-300">
+                    <div className="p-4 border-b border-border bg-secondary/50 flex items-center justify-between shrink-0">
+                        <div className="flex items-center gap-2 text-sm font-medium text-success">
                             <Bot className="w-4 h-4" />
                             AI Assistant
                         </div>
@@ -143,9 +140,9 @@ export default function PatientReportPage() {
 
                                 {chatHistory.map((msg) => (
                                     <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                        <div className={`max-w-[85%] rounded-2xl px-5 py-3 shadow-sm ${msg.role === 'user'
-                                            ? 'bg-purple-600 text-white rounded-br-sm'
-                                            : 'bg-slate-800 text-slate-200 rounded-bl-sm'
+                                        <div className={`max-w-[85%] rounded-md border border-border px-5 py-3 ${msg.role === 'user'
+                                            ? 'bg-primary text-primary-foreground rounded-br-sm'
+                                            : 'bg-muted text-foreground rounded-bl-sm'
                                             }`}>
                                             <div className="prose prose-invert prose-sm">
                                                 <ReactMarkdown>{msg.text}</ReactMarkdown>
@@ -156,10 +153,10 @@ export default function PatientReportPage() {
 
                                 {isSending && (
                                     <div className="flex justify-start">
-                                        <div className="bg-slate-800 rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-2">
-                                            <div className="w-2 h-2 bg-slate-500 rounded-full animate-bounce"></div>
-                                            <div className="w-2 h-2 bg-slate-500 rounded-full animate-bounce delay-100"></div>
-                                            <div className="w-2 h-2 bg-slate-500 rounded-full animate-bounce delay-200"></div>
+                                        <div className="bg-muted rounded-md px-4 py-3 flex items-center gap-2">
+                                            <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse"></div>
+                                            <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse delay-100"></div>
+                                            <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse delay-200"></div>
                                         </div>
                                     </div>
                                 )}
@@ -167,7 +164,7 @@ export default function PatientReportPage() {
                         </ScrollArea>
                     </div>
 
-                    <div className="p-4 border-t border-purple-900/20 bg-card shrink-0 z-10">
+                    <div className="p-4 border-t border-border bg-card shrink-0 z-10">
                         <form
                             onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
                             className="flex gap-2 relative"
@@ -176,14 +173,14 @@ export default function PatientReportPage() {
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 placeholder="Ask a follow-up question..."
-                                className="flex-1 bg-surface border-purple-900/30 text-white focus:border-purple-500 rounded-xl pr-12 py-6"
+                                className="flex-1 bg-surface border-border text-foreground focus:border-primary rounded-xl pr-12 py-6"
                                 disabled={isSending}
                             />
                             <Button
                                 type="submit"
                                 size="icon"
                                 disabled={!input.trim() || isSending}
-                                className="absolute right-1.5 top-1.5 h-9 w-9 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
+                                className="absolute right-1.5 top-1.5 h-9 w-9 bg-primary hover:bg-primary-hover rounded-lg transition-colors"
                             >
                                 <Send className="w-4 h-4" />
                             </Button>

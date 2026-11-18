@@ -5,12 +5,17 @@ import { db } from '@/lib/db';
 import { patients, reports, type Patient, type Report } from '@/lib/db/schema';
 import { getPatientScope } from '@/lib/auth/access';
 import type { AuthUser } from '@/lib/auth/session';
+import { settleDueAnalysisJobs } from '@/lib/analysis/jobs';
 
 /** Patients visible to the given user. */
 export async function loadScopedPatients(user: AuthUser): Promise<Patient[]> {
     const scope = await getPatientScope(user);
-    if (scope.kind === 'all') return db.select().from(patients);
+    if (scope.kind === 'all') {
+        await settleDueAnalysisJobs();
+        return db.select().from(patients);
+    }
     if (scope.ids.length === 0) return [];
+    await settleDueAnalysisJobs(scope.ids);
     return db.select().from(patients).where(inArray(patients.id, scope.ids));
 }
 

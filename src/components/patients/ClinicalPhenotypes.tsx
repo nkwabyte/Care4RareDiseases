@@ -1,9 +1,10 @@
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
-import { useState, KeyboardEvent } from 'react';
+import { useState, KeyboardEvent, type ReactNode } from 'react';
+import { cn } from '@/components/ui/utils';
+import { phenotypeFit } from '@/lib/evidence';
 
 const SAMPLE_TERMS = [
   'Limb hypertonia',
@@ -22,9 +23,14 @@ const SAMPLE_TERMS = [
 
 interface ClinicalPhenotypesProps {
   initialPhenotypes?: string[];
+  /** Phenotypes known to be produced by the primary variant's gene. */
+  knownFeatures?: string[];
+  gene?: string | null;
+  /** Primary action shown directly under the phenotype list. */
+  action?: ReactNode;
 }
 
-export function ClinicalPhenotypes({ initialPhenotypes = [] }: ClinicalPhenotypesProps) {
+export function ClinicalPhenotypes({ initialPhenotypes = [], knownFeatures = [], gene, action }: ClinicalPhenotypesProps) {
   const [selectedTerms, setSelectedTerms] = useState<string[]>(initialPhenotypes);
   const [prevInitialPhenotypes, setPrevInitialPhenotypes] = useState<string[]>(initialPhenotypes);
   const [inputValue, setInputValue] = useState('');
@@ -73,68 +79,79 @@ export function ClinicalPhenotypes({ initialPhenotypes = [] }: ClinicalPhenotype
     addTerm(term);
   };
 
+  const fit = phenotypeFit(selectedTerms, knownFeatures);
+  const known = fit.filter((f) => f.explained).length;
+
   return (
-    <Card className="p-5 bg-card border-border">
-      <h3 className="mb-4 text-slate-100">Clinical Phenotypes (HPO Terms)</h3>
-      
-      <div>
-        <Label htmlFor="hpo-terms" className="text-slate-200 mb-2 block">
-          HPO Terms
-        </Label>
-        
-        {/* Selected Terms as Chips */}
-        {selectedTerms.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-3 p-3 bg-surface rounded-md border border-purple-900/20">
-            {selectedTerms.map((term, index) => (
-              <Badge
-                key={index}
-                variant="secondary"
-                className="bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 pr-1 gap-1"
+    <Card className="p-6 bg-card border-border gap-0">
+      <h3 className="mb-4 text-[13px] font-bold uppercase tracking-[0.06em] text-muted-foreground">
+        Observed phenotypes · {known} of {fit.length} known features{gene ? ` of ${gene}` : ''}
+      </h3>
+
+      {fit.length === 0 ? (
+        <p className="text-muted-foreground">No phenotypes recorded yet. Add them below.</p>
+      ) : (
+        <ul className="border-t border-border">
+          {fit.map((f) => (
+            <li key={f.term} className="flex items-center gap-3 py-2.5 border-b border-border">
+              <span
+                aria-hidden
+                className={cn('size-3.5 shrink-0 border-2 border-primary', f.explained && 'bg-primary')}
+              />
+              <span className="text-foreground">{f.term}</span>
+              <span className="ml-auto text-sm text-muted-foreground">
+                {f.explained ? 'Known feature' : 'Not a known feature'}
+              </span>
+              <button
+                type="button"
+                onClick={() => removeTerm(f.term)}
+                className="p-1 text-muted-foreground hover:bg-destructive-soft hover:text-destructive"
+                aria-label={`Remove ${f.term}`}
               >
-                {term}
-                <button
-                  onClick={() => removeTerm(term)}
-                  className="ml-1 hover:bg-purple-600 rounded-full p-0.5"
-                  aria-label={`Remove ${term}`}
-                >
-                  <X size={12} />
-                </button>
-              </Badge>
-            ))}
-          </div>
-        )}
-        
-        {/* Input Field */}
-        <Input 
-          id="hpo-terms"
-          placeholder="Type terms and press comma or Enter..."
-          value={inputValue}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          className="bg-surface border-purple-900/20 text-slate-200 placeholder:text-muted-foreground mb-3"
-        />
-        
-        {/* Sample Terms */}
-        <div className="space-y-2">
-          <p className="text-slate-400">HPO terms (click to add):</p>
+                <X size={14} aria-hidden />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {action && <div className="mt-5">{action}</div>}
+
+      <details className="group mt-5 border-t border-border pt-4">
+        <summary className="cursor-pointer select-none font-semibold text-primary hover:underline">
+          Add phenotypes
+        </summary>
+        <div className="mt-4">
+          <Label htmlFor="hpo-terms" className="text-foreground mb-2 block">
+            HPO term
+          </Label>
+          <Input
+            id="hpo-terms"
+            placeholder="Type a term and press Enter or comma"
+            value={inputValue}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            className="bg-card mb-4"
+          />
+          <p className="mb-2 text-sm text-muted-foreground">Common terms</p>
           <div className="flex flex-wrap gap-2">
-            {SAMPLE_TERMS.map((term, index) => (
-              <Badge
-                key={index}
-                variant="outline"
-                className={`cursor-pointer transition-colors ${
-                  selectedTerms.includes(term)
-                    ? 'bg-slate-700 text-muted-foreground border-slate-600 cursor-not-allowed'
-                    : 'hover:bg-purple-900/30 hover:border-purple-700 hover:text-purple-300 text-slate-300 border-purple-900/20'
-                }`}
-                onClick={() => !selectedTerms.includes(term) && handleSampleTermClick(term)}
-              >
-                {term}
-              </Badge>
-            ))}
+            {SAMPLE_TERMS.map((term) => {
+              const added = selectedTerms.includes(term);
+              return (
+                <button
+                  key={term}
+                  type="button"
+                  disabled={added}
+                  onClick={() => handleSampleTermClick(term)}
+                  className="border border-border bg-card px-2.5 py-1 text-sm text-body transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground disabled:hover:border-border"
+                >
+                  {term}
+                </button>
+              );
+            })}
           </div>
         </div>
-      </div>
+      </details>
     </Card>
   );
 }

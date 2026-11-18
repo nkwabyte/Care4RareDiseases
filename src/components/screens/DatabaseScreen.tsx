@@ -55,13 +55,13 @@ export function DatabaseScreen({ onPatientClick }: DatabaseScreenProps) {
   const getStatusColor = (status: DatabasePatient['status']) => {
     switch (status) {
       case 'Pending Analysis':
-        return 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/20';
+        return 'bg-warning-soft text-warning hover:bg-warning-soft';
       case 'Results Ready':
-        return 'bg-purple-500/20 text-purple-300 hover:bg-purple-500/20';
+        return 'bg-muted text-primary hover:bg-muted';
       case 'Reviewed':
-        return 'bg-slate-500/20 text-slate-300 hover:bg-slate-500/20';
+        return 'bg-muted text-body hover:bg-muted';
       default:
-        return 'bg-slate-500/20 text-slate-400 hover:bg-slate-500/20';
+        return 'bg-muted text-muted-foreground hover:bg-muted';
     }
   };
 
@@ -102,16 +102,19 @@ export function DatabaseScreen({ onPatientClick }: DatabaseScreenProps) {
       <div className="bg-card border-b border-border px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Left: Title */}
-          <h1 className="text-slate-100">Patient Database</h1>
+          <div>
+            <h1 className="text-2xl font-bold tracking-[-0.01em] text-foreground">Patient Database</h1>
+            <p className="text-muted-foreground">Every case you can access, with status and clinician</p>
+          </div>
 
           {/* Right: Filters and Search */}
           <div className="flex items-center gap-3">
             {/* Filter by Status */}
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-56 bg-surface border-purple-900/20 text-slate-200">
+              <SelectTrigger className="w-56 bg-surface border-border text-foreground">
                 <SelectValue placeholder="Filter by Status" />
               </SelectTrigger>
-              <SelectContent className="bg-popover border-purple-900/20">
+              <SelectContent className="bg-popover border-border">
                 <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="Pending Analysis">Pending Analysis</SelectItem>
                 <SelectItem value="Results Ready">Results Ready</SelectItem>
@@ -121,10 +124,10 @@ export function DatabaseScreen({ onPatientClick }: DatabaseScreenProps) {
 
             {/* Sort by Last Updated */}
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-56 bg-surface border-purple-900/20 text-slate-200">
+              <SelectTrigger className="w-56 bg-surface border-border text-foreground">
                 <SelectValue placeholder="Sort by Last Updated" />
               </SelectTrigger>
-              <SelectContent className="bg-popover border-purple-900/20">
+              <SelectContent className="bg-popover border-border">
                 <SelectItem value="newest">Newest First</SelectItem>
                 <SelectItem value="oldest">Oldest First</SelectItem>
               </SelectContent>
@@ -134,14 +137,14 @@ export function DatabaseScreen({ onPatientClick }: DatabaseScreenProps) {
             <div className="relative">
               <Search
                 size={18}
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
               />
               <Input
                 type="text"
                 placeholder="Search Patients"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 w-64 bg-surface border-purple-900/20 text-slate-200 placeholder:text-muted-foreground"
+                className="pl-10 w-64 bg-surface border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
           </div>
@@ -152,47 +155,47 @@ export function DatabaseScreen({ onPatientClick }: DatabaseScreenProps) {
       <div className="flex-1 overflow-auto p-6">
         <Card className="bg-card border-border">
           <div className="p-6">
-            <h2 className="mb-6 text-slate-100">All Patients</h2>
+            <h2 className="mb-6 text-foreground">All Patients</h2>
 
             <Table>
               <TableHeader>
-                <TableRow className="border-purple-900/20 hover:bg-transparent">
-                  <TableHead className="text-slate-300">Patient ID</TableHead>
-                  <TableHead className="text-slate-300">Age</TableHead>
-                  <TableHead className="text-slate-300">Sex</TableHead>
-                  <TableHead className="text-slate-300">Status</TableHead>
-                  <TableHead className="text-slate-300">Last Updated</TableHead>
-                  <TableHead className="text-slate-300">Assigned Clinician</TableHead>
+                <TableRow className="border-border hover:bg-transparent">
+                  <TableHead className="text-body">Patient ID</TableHead>
+                  <TableHead className="text-body">Age</TableHead>
+                  <TableHead className="text-body">Sex</TableHead>
+                  <TableHead className="text-body">Status</TableHead>
+                  <TableHead className="text-body">Last Updated</TableHead>
+                  <TableHead className="text-body">Assigned Clinician</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   // Loading skeleton
                   Array.from({ length: 6 }).map((_, index) => (
-                    <TableRow key={index} className="border-purple-900/20">
+                    <TableRow key={index} className="border-border">
                       <TableCell>
-                        <Skeleton className="h-4 w-20 bg-purple-900/20" />
+                        <Skeleton className="h-4 w-20 bg-muted" />
                       </TableCell>
                       <TableCell>
-                        <Skeleton className="h-4 w-8 bg-purple-900/20" />
+                        <Skeleton className="h-4 w-8 bg-muted" />
                       </TableCell>
                       <TableCell>
-                        <Skeleton className="h-4 w-12 bg-purple-900/20" />
+                        <Skeleton className="h-4 w-12 bg-muted" />
                       </TableCell>
                       <TableCell>
-                        <Skeleton className="h-5 w-28 bg-purple-900/20" />
+                        <Skeleton className="h-5 w-28 bg-muted" />
                       </TableCell>
                       <TableCell>
-                        <Skeleton className="h-4 w-24 bg-purple-900/20" />
+                        <Skeleton className="h-4 w-24 bg-muted" />
                       </TableCell>
                       <TableCell>
-                        <Skeleton className="h-4 w-32 bg-purple-900/20" />
+                        <Skeleton className="h-4 w-32 bg-muted" />
                       </TableCell>
                     </TableRow>
                   ))
                 ) : filteredAndSortedPatients.length === 0 ? (
-                  <TableRow className="border-purple-900/20 hover:bg-purple-900/10">
-                    <TableCell colSpan={6} className="text-center text-slate-400 py-8">
+                  <TableRow className="border-border hover:bg-muted">
+                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                       No patients found
                     </TableCell>
                   </TableRow>
@@ -200,16 +203,16 @@ export function DatabaseScreen({ onPatientClick }: DatabaseScreenProps) {
                   filteredAndSortedPatients.map((patient) => (
                     <TableRow
                       key={patient.patientId}
-                      className="cursor-pointer hover:bg-purple-900/10 transition-colors border-purple-900/20"
+                      className="cursor-pointer hover:bg-muted transition-colors border-border"
                       onClick={() => onPatientClick?.(patient.patientId)}
                     >
-                      <TableCell className="text-purple-400">
+                      <TableCell className="text-primary">
                         {patient.patientId}
                       </TableCell>
-                      <TableCell className="text-slate-100">
+                      <TableCell className="text-foreground">
                         {patient.age}
                       </TableCell>
-                      <TableCell className="text-slate-100">
+                      <TableCell className="text-foreground">
                         {patient.sex}
                       </TableCell>
                       <TableCell>
@@ -217,14 +220,14 @@ export function DatabaseScreen({ onPatientClick }: DatabaseScreenProps) {
                           {patient.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-slate-300">
+                      <TableCell className="text-body">
                         {new Date(patient.lastUpdated).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'short',
                           day: 'numeric',
                         })}
                       </TableCell>
-                      <TableCell className="text-slate-300">
+                      <TableCell className="text-body">
                         {patient.assignedClinician}
                       </TableCell>
                     </TableRow>

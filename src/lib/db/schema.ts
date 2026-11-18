@@ -122,3 +122,22 @@ export const auditEvents = sqliteTable('audit_events', {
 ]);
 
 export type AuditEvent = typeof auditEvents.$inferSelect;
+
+// Genotype–phenotype analysis runs. Progress is derived from timestamps, so a run survives reloads and restarts.
+export const analysisJobs = sqliteTable('analysis_jobs', {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    patientId: text('patient_id').notNull().references(() => patients.id, { onDelete: 'cascade' }),
+    requestedBy: integer('requested_by').references(() => users.id, { onDelete: 'set null' }),
+    engine: text('engine').notNull(), // e.g. 'simulated'; the ML engine will register its own id
+    status: text('status', { enum: ['running', 'completed', 'failed', 'cancelled'] }).notNull(),
+    startedAt: text('started_at').notNull(),
+    expectedDurationMs: integer('expected_duration_ms').notNull(),
+    finishedAt: text('finished_at'),
+    error: text('error'),
+    result: text('result', { mode: 'json' }).$type<Record<string, unknown> | null>(),
+}, (t) => [
+    index('analysis_jobs_patient_idx').on(t.patientId),
+    index('analysis_jobs_status_idx').on(t.status),
+]);
+
+export type AnalysisJob = typeof analysisJobs.$inferSelect;

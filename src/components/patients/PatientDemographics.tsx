@@ -11,11 +11,11 @@ interface PatientDemographicsProps {
 export function PatientDemographics({ patient }: PatientDemographicsProps) {
   return (
     <Card className="p-5 bg-card border-border">
-      <h3 className="mb-4 text-slate-100">Patient Demographics</h3>
+      <h3 className="mb-4 text-foreground">Patient Demographics</h3>
 
       <div className="space-y-4">
         <div>
-          <Label htmlFor="patient-id" className="text-slate-200 mb-2 block">
+          <Label htmlFor="patient-id" className="text-foreground mb-2 block">
             Patient ID
           </Label>
           <Input
@@ -23,12 +23,12 @@ export function PatientDemographics({ patient }: PatientDemographicsProps) {
             placeholder="Enter patient ID"
             value={patient.id}
             readOnly
-            className="bg-surface border-purple-900/20 text-slate-200"
+            className="bg-surface border-border text-foreground"
           />
         </div>
 
         <div>
-          <Label htmlFor="age" className="text-slate-200 mb-2 block">
+          <Label htmlFor="age" className="text-foreground mb-2 block">
             Age
           </Label>
           <Input
@@ -37,19 +37,19 @@ export function PatientDemographics({ patient }: PatientDemographicsProps) {
             placeholder="Enter age"
             value={patient.age}
             readOnly
-            className="bg-surface border-purple-900/20 text-slate-200"
+            className="bg-surface border-border text-foreground"
           />
         </div>
 
         <div>
-          <Label htmlFor="sex" className="text-slate-200 mb-2 block">
+          <Label htmlFor="sex" className="text-foreground mb-2 block">
             Sex
           </Label>
           <Select value={patient.sex}>
-            <SelectTrigger className="bg-surface border-purple-900/20 text-slate-200">
+            <SelectTrigger className="bg-surface border-border text-foreground">
               <SelectValue placeholder="Select sex" />
             </SelectTrigger>
-            <SelectContent className="bg-popover border-purple-900/20">
+            <SelectContent className="bg-popover border-border">
               <SelectItem value="male">Male</SelectItem>
               <SelectItem value="female">Female</SelectItem>
               <SelectItem value="other">Other</SelectItem>

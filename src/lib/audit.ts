@@ -16,7 +16,10 @@ export type AuditAction =
     | 'report.create'
     | 'ai.report'
     | 'ai.chat'
-    | 'ai.genotype_analysis';
+    | 'ai.genotype_analysis'
+    | 'analysis.start'
+    | 'analysis.complete'
+    | 'analysis.cancel';
 
 /**
  * Client IP as reported by the reverse proxy. Only trustworthy when the app is deployed behind

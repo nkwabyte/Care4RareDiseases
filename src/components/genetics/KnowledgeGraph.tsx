@@ -23,27 +23,27 @@ export function KnowledgeGraph({ graphData }: KnowledgeGraphProps) {
 
   const getNodeColor = (type: string) => {
     switch (type) {
-      case 'disease': return '#a855f7'; // purple-500
-      case 'gene-primary': return '#9333ea'; // purple-600
-      case 'gene-secondary': return '#c084fc'; // purple-400
-      case 'gene-tertiary': return '#d8b4fe'; // purple-300
-      case 'phenotype': return '#f59e0b'; // amber-500
-      default: return '#94a3b8';
+      case 'disease': return 'var(--pathogenic)';
+      case 'gene-primary': return 'var(--primary)';
+      case 'gene-secondary': return '#2f6b55';
+      case 'gene-tertiary': return '#5e7f70';
+      case 'phenotype': return 'var(--gold)';
+      default: return 'var(--uncertain)';
     }
   };
 
   const getEdgeStyle = (strength: string) => {
     switch (strength) {
-      case 'strong': return { stroke: '#a855f7', strokeWidth: 3, opacity: 0.8 };
-      case 'medium': return { stroke: '#c084fc', strokeWidth: 2, opacity: 0.5 };
-      case 'weak': return { stroke: '#f59e0b', strokeWidth: 1.5, opacity: 0.4 };
-      default: return { stroke: '#4b5563', strokeWidth: 1, opacity: 0.3 };
+      case 'strong': return { stroke: 'var(--primary)', strokeWidth: 3, opacity: 0.85 };
+      case 'medium': return { stroke: '#5e7f70', strokeWidth: 2, opacity: 0.7 };
+      case 'weak': return { stroke: 'var(--gold)', strokeWidth: 1.5, opacity: 0.8, strokeDasharray: '4 4' };
+      default: return { stroke: 'var(--input)', strokeWidth: 1, opacity: 0.6 };
     }
   };
 
   return (
     <Card className="p-6 bg-card border-border h-full">
-      <h3 className="mb-4 text-slate-100">Diagnostic Knowledge Graph</h3>
+      <h3 className="mb-4 text-foreground">Diagnostic Knowledge Graph</h3>
 
       <div className="bg-surface rounded-lg p-6 h-[calc(100%-3rem)] flex flex-col">
         <svg width="100%" height="100%" viewBox="0 0 800 500" className="overflow-visible flex-1">
@@ -75,17 +75,16 @@ export function KnowledgeGraph({ graphData }: KnowledgeGraphProps) {
                 cy={node.y}
                 r={node.size}
                 fill={getNodeColor(node.type)}
-                stroke="white"
+                stroke="var(--card)"
                 strokeWidth="3"
-                className="drop-shadow-md"
               />
               <text
                 x={node.x}
                 y={node.y}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                className="fill-white pointer-events-none select-none"
-                style={{ fontSize: '11px', lineHeight: '1.2', fontWeight: 600 }}
+                className={`${node.type === 'phenotype' ? 'fill-foreground' : 'fill-primary-foreground'} pointer-events-none select-none`}
+                style={{ fontSize: '12px', lineHeight: '1.2', fontWeight: 600 }}
               >
                 {node.label.split('\\n').map((line, i) => (
                   <tspan
@@ -102,28 +101,20 @@ export function KnowledgeGraph({ graphData }: KnowledgeGraphProps) {
         </svg>
 
         {/* Legend */}
-        <div className="flex gap-4 mt-4 justify-center flex-wrap">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-purple-500"></div>
-            <span className="text-slate-300">Disease</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-purple-600"></div>
-            <span className="text-slate-300">Primary Gene</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-purple-400"></div>
-            <span className="text-slate-300">Secondary Genes</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-purple-300"></div>
-            <span className="text-slate-300">Tertiary Genes</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-            <span className="text-slate-300">Phenotypes</span>
-          </div>
-        </div>
+        <ul className="flex gap-x-5 gap-y-2 mt-4 justify-center flex-wrap text-sm">
+          {[
+            ['var(--pathogenic)', 'Disease'],
+            ['var(--primary)', 'Primary gene'],
+            ['#2f6b55', 'Secondary genes'],
+            ['#5e7f70', 'Tertiary genes'],
+            ['var(--gold)', 'Phenotypes'],
+          ].map(([color, label]) => (
+            <li key={label} className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} aria-hidden />
+              <span className="text-body">{label}</span>
+            </li>
+          ))}
+        </ul>
       </div>
     </Card>
   );

@@ -1,64 +1,102 @@
 @import "tailwindcss";
 
-/* The palette below is dark. `dark:` variants are class-based and deliberately inactive (no `.dark` on <html>),
+/* Light theme only. `dark:` variants are class-based and deliberately inactive (no `.dark` on <html>),
    so rendering never depends on the OS colour scheme and component classes are not overridden. */
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * Design tokens. Components use semantic utilities (bg-card, text-muted-foreground, bg-surface …)
- * rather than raw hex values, so the palette can be tuned in one place.
- * Contrast: foreground and muted-foreground both exceed WCAG AA (4.5:1) on background, card and surface.
+ * Design tokens. Components use semantic utilities (bg-card, text-muted-foreground, bg-primary …)
+ * rather than raw hex values, so the palette is tuned in one place.
+ * Every colour is flat: no gradients, glows or tinted shadows.
+ * Contrast on --background: foreground 16.7:1, body 11.8:1, muted-foreground 6.4:1, primary 8.7:1,
+ * destructive 7.2:1, warning 6.4:1, success 7.0:1, input border 3.3:1. Gold is a fill, never text.
  */
 :root {
-    color-scheme: dark;
+    color-scheme: light;
 
-    --background: #0a0614;
-    --foreground: #ece9f5;
+    /* Ground and ink */
+    --background: #faf9f6;
+    --foreground: #1a1916;
+    --body: #37342e;
 
-    --card: #100a1f;
-    --card-foreground: #ece9f5;
-    --popover: #1a0f2e;
-    --popover-foreground: #ece9f5;
+    /* White plates carry the selected case and work panels */
+    --card: #ffffff;
+    --card-foreground: #1a1916;
+    --popover: #ffffff;
+    --popover-foreground: #1a1916;
 
-    /* Raised fields and inset panels (inputs, variant cards, list rows) */
-    --surface: #2d1b4e;
-    --sidebar: #0f0820;
+    /* Inset panels and quiet fills */
+    --surface: #f4f2ec;
+    --muted: #f1eee6;
+    --muted-foreground: #5f5b52;
+    --secondary: #efece4;
+    --secondary-foreground: #1a1916;
+    --accent: #efece4;
+    --accent-foreground: #1a1916;
 
-    --primary: #9333ea;
+    /* Forest green: the nav rail and pressable things */
+    --sidebar: #13523b;
+    --sidebar-foreground: #d4e3da;
+    --primary: #13523b;
+    --primary-hover: #0e3f2d;
     --primary-foreground: #ffffff;
-    --secondary: #24163d;
-    --secondary-foreground: #ece9f5;
-    --muted: #1a0f2e;
-    --muted-foreground: #a8a3bf;
-    --accent: #2d1b4e;
-    --accent-foreground: #f5f3ff;
-    --destructive: #ef4444;
-    --destructive-foreground: #ffffff;
 
-    --border: #2a1d47;
-    --input: #3a2a5c;
-    --ring: #a855f7;
+    /* Gold: selection only */
+    --gold: #c9971c;
+
+    /* Status. Always paired with a word or a mark, never colour alone. */
+    --destructive: #9b2c24;
+    --destructive-foreground: #ffffff;
+    --destructive-soft: #f8e9e6;
+    --warning: #7d5300;
+    --warning-soft: #fbf2dc;
+    --success: #1f6143;
+    --success-soft: #e6f0ea;
+
+    /* ACMG classification */
+    --pathogenic: #9b2c24;
+    --likely-pathogenic: #9b2c24; /* drawn as an outline; filled red is Pathogenic */
+    --uncertain: #6b675e;
+
+    --border: #e6e2d8;
+    --input: #8f8a7e;
+    --ring: #13523b;
 
     /* Categorical data colours (charts) */
-    --chart-1: #a855f7;
-    --chart-2: #f59e0b;
-    --chart-3: #22d3ee;
-    --chart-4: #4ade80;
-    --chart-5: #f472b6;
+    --chart-1: #13523b;
+    --chart-2: #c9971c;
+    --chart-3: #9b2c24;
+    --chart-4: #2e4a7d;
+    --chart-5: #8f8a7e;
 
-    --radius: 0.5rem;
+    --radius: 0.25rem;
 }
 
 @theme inline {
+    --font-sans: var(--font-source-sans), ui-sans-serif, system-ui, sans-serif;
+    --font-mono: var(--font-source-code), ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    /* Square, woven geometry: corners stay nearly sharp everywhere except dots and avatars. */
+    --radius-xs: 1px;
+    --radius-sm: 2px;
+    --radius-md: 3px;
+    --radius-lg: 4px;
+    --radius-xl: 4px;
+    --radius-2xl: 6px;
+    --radius-3xl: 8px;
+
     --color-background: var(--background);
     --color-foreground: var(--foreground);
+    --color-body: var(--body);
     --color-card: var(--card);
     --color-card-foreground: var(--card-foreground);
     --color-popover: var(--popover);
     --color-popover-foreground: var(--popover-foreground);
     --color-surface: var(--surface);
     --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
     --color-primary: var(--primary);
+    --color-primary-hover: var(--primary-hover);
     --color-primary-foreground: var(--primary-foreground);
     --color-secondary: var(--secondary);
     --color-secondary-foreground: var(--secondary-foreground);
@@ -66,8 +104,17 @@
     --color-muted-foreground: var(--muted-foreground);
     --color-accent: var(--accent);
     --color-accent-foreground: var(--accent-foreground);
+    --color-gold: var(--gold);
     --color-destructive: var(--destructive);
     --color-destructive-foreground: var(--destructive-foreground);
+    --color-destructive-soft: var(--destructive-soft);
+    --color-warning: var(--warning);
+    --color-warning-soft: var(--warning-soft);
+    --color-success: var(--success);
+    --color-success-soft: var(--success-soft);
+    --color-pathogenic: var(--pathogenic);
+    --color-likely-pathogenic: var(--likely-pathogenic);
+    --color-uncertain: var(--uncertain);
     --color-border: var(--border);
     --color-input: var(--input);
     --color-ring: var(--ring);
@@ -83,16 +130,52 @@
         border-color: var(--border);
     }
 
+    html {
+        font-family: var(--font-sans);
+    }
+
     body {
         background-color: var(--background);
         color: var(--foreground);
+        font-size: 15px;
+        line-height: 1.5;
         -webkit-font-smoothing: antialiased;
+        font-variant-numeric: tabular-nums;
+    }
+
+    ::selection {
+        background-color: #f0dfae;
+        color: var(--foreground);
+    }
+
+    input,
+    textarea {
+        caret-color: var(--primary);
+    }
+
+    a {
+        text-underline-offset: 3px;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    [data-slot="card-title"] {
+        font-weight: 600;
+        text-wrap: balance;
     }
 
     /* Visible keyboard focus everywhere, including custom clickable elements. */
     :focus-visible {
         outline: 2px solid var(--ring);
         outline-offset: 2px;
+    }
+
+    /* Thin, warm scrollbars for long reading sessions. */
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: #cfc9bb transparent;
     }
 }
 

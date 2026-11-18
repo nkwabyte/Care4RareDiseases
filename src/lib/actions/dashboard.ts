@@ -7,21 +7,53 @@ import { requireUser } from '@/lib/auth/session';
 import { getPatientScope } from '@/lib/auth/access';
 import { toActionFailure } from '@/lib/auth/validation';
 import { loadScopedPatients, loadScopedReports } from '@/lib/data/scoped';
+import { phenotypeFit, type PhenotypeFit } from '@/lib/evidence';
 
 export type DashboardData = {
     stats: { total: number; pending: number; ready: number; reviewed: number; reportsThisMonth: number };
     reportsByMonth: { month: string; label: string; reports: number }[];
     pathogenicity: { classification: string; count: number }[];
-    pendingCases: { patientId: string; age: number; sex: string; gene: string | null; daysWaiting: number }[];
+    pendingCases: {
+        patientId: string;
+        age: number;
+        sex: string;
+        gene: string | null;
+        classification: string | null;
+        fit: PhenotypeFit[];
+        daysWaiting: number;
+    }[];
     recentActivity: { id: string; kind: 'report' | 'status' | 'ai'; patientId: string; message: string; at: string }[];
 };
 
-const ACTIVITY_ACTIONS = ['patient.status_update', 'ai.report', 'ai.genotype_analysis', 'report.create'] as const;
+const ACTIVITY_ACTIONS = [
+    'patient.status_update',
+    'ai.report',
+    'ai.genotype_analysis',
+    'report.create',
+    'analysis.start',
+    'analysis.complete',
+] as const;
 
 const monthKey = (d: Date) => `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
 
 /** Parses both ISO timestamps and SQLite "YYYY-MM-DD HH:MM:SS" (UTC) values. */
 const parseDbDate = (s: string | null | undefined) => (s ? new Date(s.includes('T') ? s : `${s.replace(' ', 'T')}Z`) : null);
+
+function activityMessage(action: string, patientId: string | null, actor: string | null, detail: unknown): string {
+    const by = actor ? ` by ${actor}` : '';
+    switch (action) {
+        case 'patient.status_update':
+            return `${patientId} marked “${String((detail as { status?: string } | null)?.status ?? 'updated')}”${by}`;
+        case 'analysis.start':
+            return `Genotype–phenotype analysis started for ${patientId}${by}`;
+        case 'analysis.complete':
+            return `Genotype–phenotype analysis finished for ${patientId}`;
+        case 'ai.report':
+            return `AI report generated for ${patientId}${by}`;
+        default:
+            return `AI genotype–phenotype analysis generated for ${patientId}${by}`;
+    }
+}
 
 export async function getDashboardAction(): Promise<{ success: boolean; data?: DashboardData; error?: string }> {
     try {
@@ -62,6 +94,8 @@ export async function getDashboardAction(): Promise<{ success: boolean; data?: D
                     age: p.age,
                     sex: p.sex,
                     gene: p.variantInfo?.gene ?? null,
+                    classification: p.variantInfo?.pathogenicity ?? null,
+                    fit: phenotypeFit(p.phenotypes, p.variantInfo?.affectedPhenotypes),
                     daysWaiting: since ? Math.max(0, Math.floor((now.getTime() - since.getTime()) / 86_400_000)) : 0,
                 };
             })
@@ -100,10 +134,7 @@ export async function getDashboardAction(): Promise<{ success: boolean; data?: D
                     kind: (a.action === 'patient.status_update' ? 'status' : 'ai') as 'status' | 'ai',
                     patientId: a.patientId ?? '',
                     at: a.at,
-                    message:
-                        a.action === 'patient.status_update'
-                            ? `${a.patientId} marked “${String((a.detail as { status?: string } | null)?.status ?? 'updated')}”${a.actor ? ` by ${a.actor}` : ''}`
-                            : `AI ${a.action === 'ai.report' ? 'report' : 'genotype–phenotype analysis'} generated for ${a.patientId}${a.actor ? ` by ${a.actor}` : ''}`,
+                    message: activityMessage(a.action, a.patientId, a.actor, a.detail),
                 })),
             ...reportRows.map((r) => ({
                 id: `report-${r.id}`,

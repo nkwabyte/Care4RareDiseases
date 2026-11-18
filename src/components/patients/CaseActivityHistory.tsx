@@ -57,7 +57,7 @@ export function CaseActivityHistory({ activities: propActivities }: CaseActivity
 
   return (
     <Card className="p-5 bg-card border-border h-full flex flex-col">
-      <h3 className="mb-4 text-slate-100">Case Activity & History</h3>
+      <h3 className="mb-4 text-foreground">Case Activity & History</h3>
       
       <ScrollArea className="flex-1">
         <div className="space-y-4">
@@ -71,23 +71,23 @@ export function CaseActivityHistory({ activities: propActivities }: CaseActivity
                 <div className="flex flex-col items-center">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                     isFirst 
-                      ? 'bg-purple-500/20' 
-                      : 'bg-slate-700'
+                      ? 'bg-muted' 
+                      : 'bg-muted'
                   }`}>
                     <Icon 
                       size={14} 
-                      className={isFirst ? 'text-purple-400' : 'text-slate-400'} 
+                      className={isFirst ? 'text-primary' : 'text-muted-foreground'} 
                     />
                   </div>
                   {index < activities.length - 1 && (
-                    <div className="w-0.5 h-full min-h-8 bg-purple-900/20 mt-1"></div>
+                    <div className="w-0.5 h-full min-h-8 bg-muted mt-1"></div>
                   )}
                 </div>
                 
                 {/* Activity Content */}
                 <div className="flex-1 pb-2">
-                  <p className="text-slate-400 mb-1">{activity.timestamp}</p>
-                  <p className={isFirst ? 'text-slate-100' : 'text-slate-300'}>
+                  <p className="text-muted-foreground mb-1">{activity.timestamp}</p>
+                  <p className={isFirst ? 'text-foreground' : 'text-body'}>
                     {activity.description}
                   </p>
                 </div>

@@ -29,14 +29,14 @@ export function ClinicalNotes({ initialNotes = '', onSaveNote }: ClinicalNotesPr
 
   return (
     <Card className="p-5 bg-card border-border h-full flex flex-col">
-      <h3 className="mb-4 text-slate-100">Clinical Notes</h3>
+      <h3 className="mb-4 text-foreground">Clinical Notes</h3>
       
       {/* Toolbar */}
-      <div className="flex items-center gap-1 mb-4 pb-3 border-b border-purple-900/20">
+      <div className="flex items-center gap-1 mb-4 pb-3 border-b border-border">
         <Button 
           variant="ghost" 
           size="sm" 
-          className="h-8 w-8 p-0 text-slate-300 hover:text-slate-100 hover:bg-purple-900/30"
+          className="h-8 w-8 p-0 text-body hover:text-foreground hover:bg-muted"
           title="Bold"
         >
           <Bold size={16} />
@@ -44,7 +44,7 @@ export function ClinicalNotes({ initialNotes = '', onSaveNote }: ClinicalNotesPr
         <Button 
           variant="ghost" 
           size="sm" 
-          className="h-8 w-8 p-0 text-slate-300 hover:text-slate-100 hover:bg-purple-900/30"
+          className="h-8 w-8 p-0 text-body hover:text-foreground hover:bg-muted"
           title="Italic"
         >
           <Italic size={16} />
@@ -52,7 +52,7 @@ export function ClinicalNotes({ initialNotes = '', onSaveNote }: ClinicalNotesPr
         <Button 
           variant="ghost" 
           size="sm" 
-          className="h-8 w-8 p-0 text-slate-300 hover:text-slate-100 hover:bg-purple-900/30"
+          className="h-8 w-8 p-0 text-body hover:text-foreground hover:bg-muted"
           title="Underline"
         >
           <Underline size={16} />
@@ -63,7 +63,7 @@ export function ClinicalNotes({ initialNotes = '', onSaveNote }: ClinicalNotesPr
         <Button 
           variant="ghost" 
           size="sm" 
-          className="h-8 w-8 p-0 text-slate-300 hover:text-slate-100 hover:bg-purple-900/30"
+          className="h-8 w-8 p-0 text-body hover:text-foreground hover:bg-muted"
           title="Bullet List"
         >
           <List size={16} />
@@ -71,7 +71,7 @@ export function ClinicalNotes({ initialNotes = '', onSaveNote }: ClinicalNotesPr
         <Button 
           variant="ghost" 
           size="sm" 
-          className="h-8 w-8 p-0 text-slate-300 hover:text-slate-100 hover:bg-purple-900/30"
+          className="h-8 w-8 p-0 text-body hover:text-foreground hover:bg-muted"
           title="Numbered List"
         >
           <ListOrdered size={16} />
@@ -82,7 +82,7 @@ export function ClinicalNotes({ initialNotes = '', onSaveNote }: ClinicalNotesPr
       <div className="flex-1 mb-4">
         <Textarea 
           placeholder="Enter clinical notes here..."
-          className="h-full min-h-[400px] resize-none bg-surface border-purple-900/20 text-slate-200 placeholder:text-muted-foreground"
+          className="h-full min-h-[400px] resize-none bg-surface border-border text-foreground placeholder:text-muted-foreground"
           value={noteContent}
           onChange={(e) => setNoteContent(e.target.value)}
         />
@@ -91,7 +91,7 @@ export function ClinicalNotes({ initialNotes = '', onSaveNote }: ClinicalNotesPr
       {/* Save Button */}
       <div className="flex justify-end">
         <Button 
-          className="bg-purple-600 hover:bg-purple-700 px-6"
+          className="bg-primary hover:bg-primary-hover px-6"
           disabled={!hasChanges}
           onClick={handleSave}
         >

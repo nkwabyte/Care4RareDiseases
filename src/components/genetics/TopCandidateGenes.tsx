@@ -11,22 +11,22 @@ export function TopCandidateGenes() {
 
   return (
     <Card className="p-5 bg-card border-border">
-      <h3 className="mb-4 text-slate-100">Top Candidate Genes</h3>
+      <h3 className="mb-4 text-foreground">Top Candidate Genes</h3>
       
       <div className="space-y-4">
         {genes.map((gene, index) => (
           <div key={index}>
             <div className="flex justify-between items-center mb-2">
-              <span className={`${gene.color === 'purple' ? 'text-purple-300' : 'text-slate-300'}`}>
+              <span className={`${gene.color === 'purple' ? 'text-primary' : 'text-body'}`}>
                 {gene.name}
               </span>
-              <span className={`${gene.color === 'purple' ? 'text-purple-400' : 'text-slate-400'}`}>
+              <span className={`${gene.color === 'purple' ? 'text-primary' : 'text-muted-foreground'}`}>
                 {gene.confidence}%
               </span>
             </div>
             <Progress 
               value={gene.confidence} 
-              className={`h-2 ${gene.color === 'purple' ? 'bg-purple-900/30' : 'bg-slate-700'}`}
+              className={`h-2 ${gene.color === 'purple' ? 'bg-muted' : 'bg-muted'}`}
             />
           </div>
         ))}

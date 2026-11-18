@@ -1,93 +1,121 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Search, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useAssignedPatients } from '@/hooks/useAssignedPatients';
+import { cn } from '@/components/ui/utils';
+import { getCaseSummariesAction } from '@/lib/actions/patients';
+import type { CaseSummary } from '@/lib/evidence';
+import { EvidenceStrip } from './Evidence';
 
 interface PatientListProps {
   selectedPatientId: string;
   onPatientSelect: (patientId: string) => void;
   onNewPatient?: () => void;
+  /** Change to reload the list (e.g. after an analysis completes). */
+  refreshKey?: number;
 }
 
-export function PatientList({ selectedPatientId, onPatientSelect, onNewPatient }: PatientListProps) {
-  const { assignedPatientIds, isLoading } = useAssignedPatients();
+const STATUS_LABEL: Record<CaseSummary['status'], string> = {
+  'Pending Analysis': 'Pending analysis',
+  'Results Ready': 'Results ready',
+  Reviewed: 'Reviewed',
+};
+
+export function PatientList({ selectedPatientId, onPatientSelect, onNewPatient, refreshKey = 0 }: PatientListProps) {
+  const [cases, setCases] = useState<CaseSummary[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Filter patient IDs based on search query
-  const filteredPatientIds = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return assignedPatientIds;
-    }
-    
-    const query = searchQuery.toLowerCase();
-    return assignedPatientIds.filter(patientId => 
-      patientId.toLowerCase().includes(query)
-    );
-  }, [assignedPatientIds, searchQuery]);
+  useEffect(() => {
+    let cancelled = false;
+    getCaseSummariesAction().then((res) => {
+      if (cancelled) return;
+      if (res.success) setCases(res.cases ?? []);
+      else setError(res.error ?? 'Could not load cases');
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [refreshKey]);
+
+  const filtered = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!cases || !q) return cases ?? [];
+    return cases.filter((c) => c.id.toLowerCase().includes(q) || c.gene?.toLowerCase().includes(q));
+  }, [cases, searchQuery]);
 
   return (
-    <div className="w-64 bg-popover border-r border-purple-900/20 h-screen flex flex-col">
-      <div className="p-4 border-b border-purple-900/20">
-        <h2 className="mb-3 text-slate-200">Patients</h2>
+    <aside aria-label="Cases" className="w-[300px] shrink-0 bg-background border-r border-border h-screen flex flex-col">
+      <div className="px-5 pt-6 pb-3">
+        <h2 className="mb-3 text-[13px] font-bold uppercase tracking-[0.06em] text-muted-foreground">
+          Your cases{cases ? ` · ${cases.length}` : ''}
+        </h2>
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={16} />
-          <Input 
-            placeholder="Search patients..." 
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} aria-hidden />
+          <Input
+            aria-label="Search cases by ID or gene"
+            placeholder="Search case ID or gene"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 bg-surface border-purple-900/20 text-slate-200 placeholder:text-muted-foreground"
+            className="pl-9 bg-card"
           />
         </div>
       </div>
-      
-      <ScrollArea className="flex-1">
-        <div className="p-2">
-          {isLoading ? (
-            // Loading skeleton
-            Array.from({ length: 6 }).map((_, index) => (
-              <div key={index} className="px-3 py-2.5 mb-1">
-                <Skeleton className="h-5 w-full bg-purple-900/20" />
-              </div>
-            ))
-          ) : filteredPatientIds.length === 0 ? (
-            <div className="px-3 py-8 text-center text-slate-400 text-sm">
-              {searchQuery ? 'No patients found' : 'No patients assigned'}
+
+      <ScrollArea className="flex-1 min-h-0 border-t border-border">
+        {error ? (
+          <p role="alert" className="px-5 py-8 text-sm text-destructive">{error}</p>
+        ) : !cases ? (
+          Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="px-5 py-3 border-b border-border space-y-2">
+              <Skeleton className="h-4 w-2/3 bg-muted" />
+              <Skeleton className="h-2.5 w-full bg-muted" />
             </div>
-          ) : (
-            filteredPatientIds.map((patientId) => {
-              const isSelected = patientId === selectedPatientId;
-              
+          ))
+        ) : filtered.length === 0 ? (
+          <p className="px-5 py-8 text-center text-sm text-muted-foreground">
+            {searchQuery ? 'No cases match your search' : 'No cases assigned to you yet'}
+          </p>
+        ) : (
+          <ul>
+            {filtered.map((c) => {
+              const isSelected = c.id === selectedPatientId;
               return (
-                <button
-                  key={patientId}
-                  onClick={() => onPatientSelect(patientId)}
-                  className={`w-full text-left px-3 py-2.5 rounded-lg mb-1 transition-colors ${
-                    isSelected 
-                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white border border-purple-400/30' 
-                      : 'text-slate-300 hover:bg-purple-900/30'
-                  }`}
-                >
-                  <div>{patientId}</div>
-                </button>
+                <li key={c.id}>
+                  <button
+                    type="button"
+                    onClick={() => onPatientSelect(c.id)}
+                    aria-current={isSelected ? 'true' : undefined}
+                    className={cn(
+                      'w-full text-left px-5 py-3 border-b border-border grid grid-cols-[minmax(0,1fr)] gap-1.5 transition-colors',
+                      'focus-visible:outline-offset-[-2px]',
+                      isSelected ? 'bg-card shadow-[inset_4px_0_0_var(--gold)]' : 'hover:bg-card/70'
+                    )}
+                  >
+                    <span className="flex items-baseline justify-between gap-3">
+                      <span className="shrink-0 whitespace-nowrap text-base font-semibold text-foreground">{c.id}</span>
+                      <span className="min-w-0 truncate text-[13px] text-muted-foreground">
+                        {c.gene ? <span className="font-medium text-body">{c.gene}</span> : 'No variant'} ·{' '}
+                        {c.analysisRunning ? <span className="font-semibold text-foreground">Analysis running</span> : STATUS_LABEL[c.status]}
+                      </span>
+                    </span>
+                    <EvidenceStrip fit={c.fit} classification={c.classification} status={c.status} />
+                  </button>
+                </li>
               );
-            })
-          )}
-        </div>
+            })}
+          </ul>
+        )}
       </ScrollArea>
 
-      {/* New Patient Button - Fixed at bottom */}
-      <div className="p-4 border-t border-purple-900/20">
-        <Button 
-          onClick={onNewPatient}
-          className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-        >
-          <Plus size={16} className="mr-2" />
-          New Patient
+      <div className="p-4 border-t border-border">
+        <Button onClick={onNewPatient} variant="outline" className="w-full">
+          <Plus size={16} aria-hidden />
+          New case
         </Button>
       </div>
-    </div>
+    </aside>
   );
 }

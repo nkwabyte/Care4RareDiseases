@@ -159,7 +159,7 @@ export function NewPatientDialog({ open, onOpenChange, onCreatePatient }: NewPat
             </Button>
             <Button 
               type="submit"
-              className="bg-teal-600 hover:bg-teal-700"
+              className="bg-primary hover:bg-primary-hover"
             >
               Create Patient
             </Button>

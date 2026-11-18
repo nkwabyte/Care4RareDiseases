@@ -228,40 +228,40 @@ export function PatientLikeMeComparison({ gene = 'GATAD2B' }: PatientLikeMeCompa
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-slate-500/20 rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 text-slate-400" />
+              <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
+                <Users className="w-5 h-5 text-muted-foreground" />
               </div>
               <div>
-                <CardTitle className="text-slate-100">PatientsLikeMe Database Comparison</CardTitle>
-                <p className="text-slate-400 mt-1">Community-driven rare disease registry insights</p>
+                <CardTitle className="text-foreground">PatientsLikeMe Database Comparison</CardTitle>
+                <p className="text-muted-foreground mt-1">Community-driven rare disease registry insights</p>
               </div>
             </div>
-            <Badge variant="outline" className="bg-slate-500/20 text-slate-300 border-slate-500/30">
+            <Badge variant="outline" className="bg-muted text-body border-border">
               <XCircle className="w-3 h-3 mr-1" />
               No Match Found
             </Badge>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="bg-surface border border-purple-900/20 rounded-lg p-4">
+          <div className="bg-surface border border-border rounded-lg p-4">
             <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-slate-400 mt-0.5 flex-shrink-0" />
+              <AlertCircle className="w-5 h-5 text-muted-foreground mt-0.5 flex-shrink-0" />
               <div className="flex-1">
-                <p className="text-slate-100 mb-2">
+                <p className="text-foreground mb-2">
                   <strong>{gene}</strong>-related conditions have not been documented in the PatientsLikeMe community database.
                 </p>
-                <p className="text-slate-300">
+                <p className="text-body">
                   This may indicate an ultra-rare condition with limited reported cases. Consider consulting with disease-specific registries or international rare disease databases for additional patient data.
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-4 border-t border-purple-900/20">
-            <p className="text-slate-300">
-              Last database update: <span className="text-slate-100">October 2025</span>
+          <div className="flex items-center justify-between pt-4 border-t border-border">
+            <p className="text-body">
+              Last database update: <span className="text-foreground">October 2025</span>
             </p>
-            <Button variant="outline" className="gap-2 border-purple-900/20 text-slate-200 hover:bg-purple-900/30">
+            <Button variant="outline" className="gap-2 border-border text-foreground hover:bg-muted">
               Search Other Registries
               <ExternalLink className="w-4 h-4" />
             </Button>
@@ -275,26 +275,26 @@ export function PatientLikeMeComparison({ gene = 'GATAD2B' }: PatientLikeMeCompa
     match: {
       icon: <CheckCircle2 className="w-3 h-3 mr-1" />,
       text: 'Match Found',
-      bgColor: 'bg-green-500/20',
-      textColor: 'text-green-300',
-      borderColor: 'border-green-500/30',
-      alertBg: 'bg-purple-500/20',
-      alertBorder: 'border-purple-500/30',
-      alertIcon: 'text-purple-400',
-      alertText: 'text-slate-100',
-      alertSubText: 'text-slate-300',
+      bgColor: 'bg-success-soft',
+      textColor: 'text-success',
+      borderColor: 'border-success/30',
+      alertBg: 'bg-muted',
+      alertBorder: 'border-border',
+      alertIcon: 'text-primary',
+      alertText: 'text-foreground',
+      alertSubText: 'text-body',
     },
     limited: {
       icon: <AlertTriangle className="w-3 h-3 mr-1" />,
       text: 'Limited Data',
-      bgColor: 'bg-amber-500/20',
-      textColor: 'text-amber-300',
-      borderColor: 'border-amber-500/30',
-      alertBg: 'bg-amber-500/20',
-      alertBorder: 'border-amber-500/30',
-      alertIcon: 'text-amber-400',
-      alertText: 'text-slate-100',
-      alertSubText: 'text-slate-300',
+      bgColor: 'bg-warning-soft',
+      textColor: 'text-warning',
+      borderColor: 'border-warning/30',
+      alertBg: 'bg-warning-soft',
+      alertBorder: 'border-warning/30',
+      alertIcon: 'text-warning',
+      alertText: 'text-foreground',
+      alertSubText: 'text-body',
     },
   };
 
@@ -305,12 +305,12 @@ export function PatientLikeMeComparison({ gene = 'GATAD2B' }: PatientLikeMeCompa
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
-              <Users className="w-5 h-5 text-purple-400" />
+            <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
+              <Users className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <CardTitle className="text-slate-100">PatientsLikeMe Database Comparison</CardTitle>
-              <p className="text-slate-400 mt-1">Community-driven rare disease registry insights</p>
+              <CardTitle className="text-foreground">PatientsLikeMe Database Comparison</CardTitle>
+              <p className="text-muted-foreground mt-1">Community-driven rare disease registry insights</p>
             </div>
           </div>
           <Badge variant="outline" className={`${config.bgColor} ${config.textColor} ${config.borderColor}`}>
@@ -340,55 +340,55 @@ export function PatientLikeMeComparison({ gene = 'GATAD2B' }: PatientLikeMeCompa
 
         {/* Statistics Grid */}
         <div className="grid grid-cols-4 gap-4">
-          <div className="bg-surface border border-purple-900/20 rounded-lg p-4">
+          <div className="bg-surface border border-border rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
-              <Users className="w-4 h-4 text-slate-400" />
-              <p className="text-slate-400">Total Cases</p>
+              <Users className="w-4 h-4 text-muted-foreground" />
+              <p className="text-muted-foreground">Total Cases</p>
             </div>
-            <p className="text-slate-100">{data.totalCases}</p>
-            <p className="text-slate-400 mt-1">Globally registered</p>
+            <p className="text-foreground">{data.totalCases}</p>
+            <p className="text-muted-foreground mt-1">Globally registered</p>
           </div>
 
-          <div className="bg-surface border border-purple-900/20 rounded-lg p-4">
+          <div className="bg-surface border border-border rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
-              <CheckCircle2 className="w-4 h-4 text-slate-400" />
-              <p className="text-slate-400">Similar Phenotype</p>
+              <CheckCircle2 className="w-4 h-4 text-muted-foreground" />
+              <p className="text-muted-foreground">Similar Phenotype</p>
             </div>
-            <p className="text-slate-100">{data.similarPhenotype} patients</p>
-            <p className="text-slate-400 mt-1">Match ≥75%</p>
+            <p className="text-foreground">{data.similarPhenotype} patients</p>
+            <p className="text-muted-foreground mt-1">Match ≥75%</p>
           </div>
 
-          <div className="bg-surface border border-purple-900/20 rounded-lg p-4">
+          <div className="bg-surface border border-border rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="w-4 h-4 text-slate-400" />
-              <p className="text-slate-400">Age Range</p>
+              <TrendingUp className="w-4 h-4 text-muted-foreground" />
+              <p className="text-muted-foreground">Age Range</p>
             </div>
-            <p className="text-slate-100">{data.ageRange}</p>
-            <p className="text-slate-400 mt-1">Median: {data.ageMedian}</p>
+            <p className="text-foreground">{data.ageRange}</p>
+            <p className="text-muted-foreground mt-1">Median: {data.ageMedian}</p>
           </div>
 
-          <div className="bg-surface border border-purple-900/20 rounded-lg p-4">
+          <div className="bg-surface border border-border rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
-              <Users className="w-4 h-4 text-slate-400" />
-              <p className="text-slate-400">De Novo Cases</p>
+              <Users className="w-4 h-4 text-muted-foreground" />
+              <p className="text-muted-foreground">De Novo Cases</p>
             </div>
-            <p className="text-slate-100">{data.deNovoPercent}%</p>
-            <p className="text-slate-400 mt-1">{data.deNovoCount}</p>
+            <p className="text-foreground">{data.deNovoPercent}%</p>
+            <p className="text-muted-foreground mt-1">{data.deNovoCount}</p>
           </div>
         </div>
 
         {/* Common Characteristics */}
         <div>
-          <h3 className="text-slate-100 mb-3">Most Reported Characteristics in Community</h3>
+          <h3 className="text-foreground mb-3">Most Reported Characteristics in Community</h3>
           <div className="grid grid-cols-2 gap-3">
             {data.characteristics.map((char: any, index: number) => (
-              <div key={index} className="bg-surface border border-purple-900/20 rounded-lg p-3">
+              <div key={index} className="bg-surface border border-border rounded-lg p-3">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-slate-100">{char.name}</span>
-                  <Badge variant="outline" className="text-slate-300 border-purple-900/20">{char.percent}%</Badge>
+                  <span className="text-foreground">{char.name}</span>
+                  <Badge variant="outline" className="text-body border-border">{char.percent}%</Badge>
                 </div>
-                <div className="w-full bg-purple-900/30 rounded-full h-2">
-                  <div className="bg-purple-500 h-2 rounded-full" style={{ width: `${char.percent}%` }}></div>
+                <div className="w-full bg-muted h-2">
+                  <div className="bg-primary h-2" style={{ width: `${char.percent}%` }}></div>
                 </div>
               </div>
             ))}
@@ -397,17 +397,17 @@ export function PatientLikeMeComparison({ gene = 'GATAD2B' }: PatientLikeMeCompa
 
         {/* Community Insights */}
         <div>
-          <h3 className="text-slate-100 mb-3">Community Treatment Insights</h3>
+          <h3 className="text-foreground mb-3">Community Treatment Insights</h3>
           <div className="space-y-2">
             {data.treatments.map((treatment: any, index: number) => (
-              <div key={index} className="bg-surface border border-purple-900/20 rounded-lg p-3">
+              <div key={index} className="bg-surface border border-border rounded-lg p-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-purple-500/20 text-purple-300 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-muted text-primary flex items-center justify-center flex-shrink-0">
                     {index + 1}
                   </div>
                   <div className="flex-1">
-                    <p className="text-slate-100 mb-1">{treatment.title}</p>
-                    <p className="text-slate-300">{treatment.description}</p>
+                    <p className="text-foreground mb-1">{treatment.title}</p>
+                    <p className="text-body">{treatment.description}</p>
                   </div>
                 </div>
               </div>
@@ -416,11 +416,11 @@ export function PatientLikeMeComparison({ gene = 'GATAD2B' }: PatientLikeMeCompa
         </div>
 
         {/* Action Button */}
-        <div className="flex items-center justify-between pt-4 border-t border-purple-900/20">
-          <p className="text-slate-300">
-            Last database update: <span className="text-slate-100">October 2025</span>
+        <div className="flex items-center justify-between pt-4 border-t border-border">
+          <p className="text-body">
+            Last database update: <span className="text-foreground">October 2025</span>
           </p>
-          <Button variant="outline" className="gap-2 border-purple-900/20 text-slate-200 hover:bg-purple-900/30">
+          <Button variant="outline" className="gap-2 border-border text-foreground hover:bg-muted">
             View Full Community Data
             <ExternalLink className="w-4 h-4" />
           </Button>

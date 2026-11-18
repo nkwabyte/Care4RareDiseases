@@ -38,19 +38,19 @@ export function GenotypePhenotypeAnalysis({ patientData }: GenotypePhenotypeAnal
         <Card className="p-6 bg-card border-border">
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-purple-500/10 rounded-lg">
-                        <Stethoscope className="w-6 h-6 text-purple-400" />
+                    <div className="p-2 bg-muted rounded-lg">
+                        <Stethoscope className="w-6 h-6 text-primary" />
                     </div>
                     <div>
-                        <h3 className="text-lg font-semibold text-slate-100">Genotype-Phenotype Correlation</h3>
-                        <p className="text-sm text-slate-400">AI-driven analysis of variant impact on clinical presentation</p>
+                        <h3 className="text-lg font-semibold text-foreground">Genotype-Phenotype Correlation</h3>
+                        <p className="text-sm text-muted-foreground">AI-driven analysis of variant impact on clinical presentation</p>
                     </div>
                 </div>
                 <Button
                     onClick={handleGenerateAnalysis}
                     disabled={loading}
                     variant="outline"
-                    className="border-purple-500/30 text-purple-300 hover:bg-purple-500/10"
+                    className="border-border text-primary hover:bg-muted"
                 >
                     {loading ? (
                         <>
@@ -67,12 +67,12 @@ export function GenotypePhenotypeAnalysis({ patientData }: GenotypePhenotypeAnal
             </div>
 
             {analysis ? (
-                <div className="prose prose-invert max-w-none bg-popover/50 p-6 rounded-lg border border-purple-900/20">
+                <div className="prose prose-invert max-w-none bg-popover/50 p-6 rounded-lg border border-border">
                     <ReactMarkdown>{analysis}</ReactMarkdown>
                 </div>
             ) : (
-                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground border-2 border-dashed border-slate-800 rounded-lg bg-slate-900/20">
-                    <Stethoscope className="w-12 h-12 mb-4 text-slate-700" />
+                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground border-2 border-dashed border-border rounded-lg bg-muted">
+                    <Stethoscope className="w-12 h-12 mb-4 text-foreground" />
                     <p className="max-w-md text-center">
                         Generate a deep learning analysis connecting the specific genetic variants to the observed clinical phenotypes using Gemini 2.5 Pro.
                     </p>

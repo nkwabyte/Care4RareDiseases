@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Lock, User, AlertCircle } from 'lucide-react';
+import { BrandMark } from '@/components/layout/BrandMark';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -35,40 +36,40 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
       <div className="w-full max-w-md">
         {/* Logo/Branding */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-500/20 rounded-2xl mb-4">
-            <Lock className="w-8 h-8 text-purple-400" />
+          <div className="inline-grid place-items-center size-16 bg-sidebar mb-5">
+            <BrandMark className="size-11" />
           </div>
-          <h1 className="text-slate-100 mb-2">Care for Rare</h1>
-          <p className="text-slate-400">
+          <h1 className="text-[30px] font-bold tracking-[-0.01em] text-foreground mb-1">Care4RareDiseases</h1>
+          <p className="text-muted-foreground">
             Rare Disease Diagnostic Platform
           </p>
         </div>
 
         {/* Login Card */}
-        <Card className="bg-popover border-purple-900/20">
+        <Card className="bg-popover border-border">
           <CardHeader>
-            <CardTitle className="text-slate-100">Doctor Login</CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardTitle className="text-foreground">Doctor Login</CardTitle>
+            <CardDescription className="text-muted-foreground">
               Enter your credentials to access the diagnostic platform
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
               {error && (
-                <Alert className="bg-red-500/10 border-red-500/20">
-                  <AlertCircle className="h-4 w-4 text-red-400" />
-                  <AlertDescription className="text-red-300">
+                <Alert className="bg-destructive-soft border-destructive/30">
+                  <AlertCircle className="h-4 w-4 text-destructive" />
+                  <AlertDescription className="text-destructive">
                     {error}
                   </AlertDescription>
                 </Alert>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-slate-300">
+                <Label htmlFor="email" className="text-body">
                   Email Address
                 </Label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
@@ -78,7 +79,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                     placeholder="doctor@hospital.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10 bg-background border-purple-900/20 text-slate-100 placeholder:text-muted-foreground focus:border-purple-500"
+                    className="pl-10 bg-background border-border text-foreground placeholder:text-muted-foreground focus:border-primary"
                     required
                     disabled={isLoading}
                   />
@@ -86,11 +87,11 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-slate-300">
+                <Label htmlFor="password" className="text-body">
                   Password
                 </Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     id="password"
                     type="password"
@@ -99,7 +100,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 bg-background border-purple-900/20 text-slate-100 placeholder:text-muted-foreground focus:border-purple-500"
+                    className="pl-10 bg-background border-border text-foreground placeholder:text-muted-foreground focus:border-primary"
                     required
                     disabled={isLoading}
                   />
@@ -108,16 +109,16 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 
               <Button
                 type="submit"
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white cursor-pointer"
+                className="w-full bg-primary hover:bg-primary-hover text-primary-foreground cursor-pointer"
                 disabled={isLoading}
               >
                 {isLoading ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
 
-            <div className="mt-6 p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
-              <p className="text-xs text-slate-400">
-                <strong className="text-purple-300">Note:</strong> Access to this platform is restricted to enrolled medical professionals.
+            <div className="mt-6 p-4 bg-muted border border-border rounded-lg">
+              <p className="text-xs text-muted-foreground">
+                <strong className="text-primary">Note:</strong> Access to this platform is restricted to enrolled medical professionals.
                 Contact your administrator if you need login credentials.
               </p>
             </div>

@@ -29,9 +29,9 @@ export default function ProtectedLayout({
         return (
             <div className="flex h-screen bg-background items-center justify-center">
                 <div className="text-center">
-                    <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                         <svg
-                            className="w-8 h-8 text-purple-400 animate-spin"
+                            className="w-8 h-8 text-primary animate-spin"
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
@@ -51,7 +51,7 @@ export default function ProtectedLayout({
                             ></path>
                         </svg>
                     </div>
-                    <p className="text-slate-400">Loading...</p>
+                    <p className="text-muted-foreground">Loading...</p>
                 </div>
             </div>
         );
