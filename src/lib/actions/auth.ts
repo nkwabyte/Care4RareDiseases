@@ -1,23 +1,25 @@
 'use server';
 
-import { db } from '@/lib/db';
-import { users, doctors, sessions } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
-import { SignJWT, jwtVerify } from 'jose';
-import { cookies } from 'next/headers';
+import { eq } from 'drizzle-orm';
+import { z } from 'zod';
+import { db } from '@/lib/db';
+import { users } from '@/lib/db/schema';
+import {
+    createSession,
+    destroySession,
+    getCurrentUser,
+    requireUser,
+    revokeUserSessions,
+    SESSION_IDLE_TIMEOUT_MS,
+    SESSION_MAX_AGE_MS,
+    type AuthUser,
+} from '@/lib/auth/session';
+import { checkLoginAllowed, recordLoginFailure, recordLoginSuccess } from '@/lib/auth/rate-limit';
+import { audit, getClientIp } from '@/lib/audit';
+import { toActionFailure } from '@/lib/auth/validation';
 
-const JWT_SECRET = new TextEncoder().encode(
-    process.env.JWT_SECRET || 'your-secret-key-change-in-production'
-);
-
-export type AuthUser = {
-    id: number;
-    email: string;
-    name: string;
-    role?: string;
-    specialty?: string;
-};
+export type { AuthUser };
 
 export type AuthResult = {
     success: boolean;
@@ -25,116 +27,50 @@ export type AuthResult = {
     error?: string;
 };
 
-/**
- * Login action - authenticates user and creates session
- */
+const credentialsSchema = z.object({
+    email: z.string().trim().toLowerCase().email().max(254),
+    password: z.string().min(1).max(256),
+});
+
+/** Compared against when the email is unknown, so response time does not reveal which accounts exist. */
+const DUMMY_HASH = bcrypt.hashSync('timing-equaliser', 10);
+const INVALID: AuthResult = { success: false, error: 'Invalid email or password' };
+
 export async function loginAction(email: string, password: string): Promise<AuthResult> {
+    const parsed = credentialsSchema.safeParse({ email, password });
+    if (!parsed.success) return INVALID;
+
+    const { email: normalisedEmail } = parsed.data;
     try {
-        if (!email || !password) {
-            return { success: false, error: 'Email and password are required' };
-        }
-
-        // Try to find user in users table first (new auth system)
-        const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
-
-        if (user) {
-            // Verify password
-            const isValidPassword = await bcrypt.compare(password, user.passwordHash);
-
-            if (!isValidPassword) {
-                return { success: false, error: 'Invalid credentials' };
-            }
-
-            // Check if user is active
-            if (!user.isActive) {
-                return { success: false, error: 'Account is disabled' };
-            }
-
-            // Create JWT token
-            const token = await new SignJWT({ userId: user.id, email: user.email, role: user.role })
-                .setProtectedHeader({ alg: 'HS256' })
-                .setIssuedAt()
-                .setExpirationTime('7d')
-                .sign(JWT_SECRET);
-
-            // Store session in database
-            const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
-            await db.insert(sessions).values({
-                userId: user.id,
-                doctorId: null,
-                token,
-                expiresAt: expiresAt.toISOString(),
-                createdAt: new Date().toISOString(),
-            });
-
-            // Set httpOnly cookie
-            (await cookies()).set('session', token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax',
-                maxAge: 7 * 24 * 60 * 60, // 7 days
-                path: '/',
-            });
-
+        const waitMs = checkLoginAllowed(normalisedEmail, await getClientIp());
+        if (waitMs) {
+            await audit({ action: 'auth.locked', outcome: 'denied', detail: { email: normalisedEmail } });
             return {
-                success: true,
-                user: {
-                    id: user.id,
-                    email: user.email,
-                    name: user.name,
-                    role: user.role,
-                },
+                success: false,
+                error: `Too many sign-in attempts. Try again in ${Math.ceil(waitMs / 60_000)} minute(s).`,
             };
         }
 
-        // Fallback to doctors table for backward compatibility
-        const [doctor] = await db.select().from(doctors).where(eq(doctors.email, email)).limit(1);
+        const [user] = await db.select().from(users).where(eq(users.email, normalisedEmail)).limit(1);
+        const passwordOk = await bcrypt.compare(parsed.data.password, user?.passwordHash ?? DUMMY_HASH);
 
-        if (!doctor) {
-            return { success: false, error: 'Invalid credentials' };
+        if (!user || !passwordOk || !user.isActive) {
+            const locked = recordLoginFailure(normalisedEmail);
+            await audit({
+                action: 'auth.login',
+                outcome: 'failure',
+                userId: user?.id,
+                detail: { email: normalisedEmail, ...(locked ? { lockedOut: true } : {}) },
+            });
+            return INVALID;
         }
 
-        // Verify password
-        const isValidPassword = await bcrypt.compare(password, doctor.passwordHash);
-
-        if (!isValidPassword) {
-            return { success: false, error: 'Invalid credentials' };
-        }
-
-        // Create JWT token
-        const token = await new SignJWT({ doctorId: doctor.id, email: doctor.email })
-            .setProtectedHeader({ alg: 'HS256' })
-            .setIssuedAt()
-            .setExpirationTime('7d')
-            .sign(JWT_SECRET);
-
-        // Store session in database
-        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
-        await db.insert(sessions).values({
-            userId: null,
-            doctorId: doctor.id,
-            token,
-            expiresAt: expiresAt.toISOString(),
-            createdAt: new Date().toISOString(),
-        });
-
-        // Set httpOnly cookie
-        (await cookies()).set('session', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            maxAge: 7 * 24 * 60 * 60, // 7 days
-            path: '/',
-        });
-
+        recordLoginSuccess(normalisedEmail);
+        await createSession(user.id);
+        await audit({ action: 'auth.login', outcome: 'success', userId: user.id });
         return {
             success: true,
-            user: {
-                id: doctor.id,
-                email: doctor.email,
-                name: doctor.name,
-                specialty: doctor.specialty || undefined,
-            },
+            user: { id: user.id, email: user.email, name: user.name, role: user.role },
         };
     } catch (error) {
         console.error('Login error:', error);
@@ -142,22 +78,11 @@ export async function loginAction(email: string, password: string): Promise<Auth
     }
 }
 
-/**
- * Logout action - deletes session and clears cookie
- */
 export async function logoutAction(): Promise<{ success: boolean }> {
     try {
-        const cookieStore = await cookies();
-        const sessionToken = cookieStore.get('session')?.value;
-
-        if (sessionToken) {
-            // Delete session from database
-            await db.delete(sessions).where(eq(sessions.token, sessionToken));
-        }
-
-        // Clear cookie
-        cookieStore.delete('session');
-
+        const user = await getCurrentUser();
+        await destroySession();
+        if (user) await audit({ action: 'auth.logout', outcome: 'success', userId: user.id });
         return { success: true };
     } catch (error) {
         console.error('Logout error:', error);
@@ -165,75 +90,94 @@ export async function logoutAction(): Promise<{ success: boolean }> {
     }
 }
 
-/**
- * Get current session - validates token and returns user info
- */
 export async function getSessionAction(): Promise<AuthResult> {
     try {
-        const cookieStore = await cookies();
-        const sessionToken = cookieStore.get('session')?.value;
-
-        if (!sessionToken) {
-            return { success: false, error: 'No session found' };
-        }
-
-        // Verify JWT
-        const { payload } = await jwtVerify(sessionToken, JWT_SECRET);
-
-        // Get session from database
-        const [session] = await db
-            .select()
-            .from(sessions)
-            .where(eq(sessions.token, sessionToken))
-            .limit(1);
-
-        if (!session) {
-            return { success: false, error: 'Invalid session' };
-        }
-
-        // Check if session is expired
-        if (new Date(session.expiresAt) < new Date()) {
-            await db.delete(sessions).where(eq(sessions.token, sessionToken));
-            cookieStore.delete('session');
-            return { success: false, error: 'Session expired' };
-        }
-
-        // Get user info
-        if (session.userId) {
-            const [user] = await db.select().from(users).where(eq(users.id, session.userId)).limit(1);
-            if (user) {
-                return {
-                    success: true,
-                    user: {
-                        id: user.id,
-                        email: user.email,
-                        name: user.name,
-                        role: user.role,
-                    },
-                };
-            }
-        } else if (session.doctorId) {
-            const [doctor] = await db
-                .select()
-                .from(doctors)
-                .where(eq(doctors.id, session.doctorId))
-                .limit(1);
-            if (doctor) {
-                return {
-                    success: true,
-                    user: {
-                        id: doctor.id,
-                        email: doctor.email,
-                        name: doctor.name,
-                        specialty: doctor.specialty || undefined,
-                    },
-                };
-            }
-        }
-
-        return { success: false, error: 'User not found' };
+        const user = await getCurrentUser();
+        return user ? { success: true, user } : { success: false, error: 'Not authenticated' };
     } catch (error) {
         console.error('Get session error:', error);
-        return { success: false, error: 'Invalid session' };
+        return { success: false, error: 'Not authenticated' };
+    }
+}
+
+/** Security policy actually enforced by the server (shown read-only in Settings). */
+export async function getSecurityPolicyAction(): Promise<{
+    success: boolean;
+    policy?: { sessionMaxHours: number; idleTimeoutMinutes: number; maxFailedLogins: number; minPasswordLength: number };
+    error?: string;
+}> {
+    try {
+        await requireUser();
+        return {
+            success: true,
+            policy: {
+                sessionMaxHours: SESSION_MAX_AGE_MS / 3_600_000,
+                idleTimeoutMinutes: SESSION_IDLE_TIMEOUT_MS / 60_000,
+                maxFailedLogins: 5,
+                minPasswordLength: MIN_PASSWORD_LENGTH,
+            },
+        };
+    } catch (error) {
+        return toActionFailure(error, 'Fetch security policy');
+    }
+}
+
+const MIN_PASSWORD_LENGTH = 12;
+const changePasswordSchema = z
+    .object({
+        currentPassword: z.string().min(1, 'Enter your current password').max(256),
+        newPassword: z
+            .string()
+            .min(MIN_PASSWORD_LENGTH, `New password must be at least ${MIN_PASSWORD_LENGTH} characters`)
+            .max(256, 'New password is too long'),
+    })
+    .refine((v) => v.currentPassword !== v.newPassword, {
+        message: 'New password must differ from the current one',
+    });
+
+/** Changes the current user's password and signs out every other session. */
+export async function changePasswordAction(
+    currentPassword: string,
+    newPassword: string
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        const input = changePasswordSchema.parse({ currentPassword, newPassword });
+        const sessionUser = await requireUser();
+
+        const waitMs = checkLoginAllowed(sessionUser.email, await getClientIp());
+        if (waitMs) {
+            return { success: false, error: `Too many attempts. Try again in ${Math.ceil(waitMs / 60_000)} minute(s).` };
+        }
+
+        const [user] = await db.select().from(users).where(eq(users.id, sessionUser.id)).limit(1);
+        if (!user || !(await bcrypt.compare(input.currentPassword, user.passwordHash))) {
+            recordLoginFailure(sessionUser.email);
+            await audit({ action: 'auth.password_change', outcome: 'failure', userId: sessionUser.id });
+            return { success: false, error: 'Current password is incorrect' };
+        }
+
+        await db
+            .update(users)
+            .set({ passwordHash: await bcrypt.hash(input.newPassword, 12), updatedAt: new Date().toISOString() })
+            .where(eq(users.id, user.id));
+        await revokeUserSessions(user.id);
+        await createSession(user.id);
+        await audit({ action: 'auth.password_change', outcome: 'success', userId: user.id });
+        return { success: true };
+    } catch (error) {
+        return toActionFailure(error, 'Change password');
+    }
+}
+
+/** Ends every session for the current user, including this one. */
+export async function signOutEverywhereAction(): Promise<{ success: boolean; error?: string }> {
+    try {
+        const user = await requireUser();
+        await revokeUserSessions(user.id);
+        await destroySession();
+        await audit({ action: 'auth.logout_all', outcome: 'success', userId: user.id });
+        return { success: true };
+    } catch (error) {
+        return toActionFailure(error, 'Sign out everywhere');
     }
 }

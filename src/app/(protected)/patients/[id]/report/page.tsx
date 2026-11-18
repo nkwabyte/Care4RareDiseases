@@ -58,14 +58,9 @@ export default function PatientReportPage() {
                 parts: m.text
             }));
 
-            // Add current user message to context logic if needed, 
-            // but chatWithAIAction takes history + new message.
-
-            // Pass report as context if it's the first message or to keep context fresh
-            // Ideally, the AI action handles context window.
-            const context = `Here is the generated medical report you are discussing:\n${currentReport}`;
-
-            const result = await chatWithAIAction(historyForApi, userMsg.text, context);
+            if (!selectedPatientId) throw new Error('No patient selected');
+            // The server loads patient data itself; only the report text and conversation are sent.
+            const result = await chatWithAIAction(selectedPatientId, historyForApi, userMsg.text, currentReport ?? undefined);
 
             if (result.success && result.reply) {
                 const aiMsg = {
@@ -90,9 +85,9 @@ export default function PatientReportPage() {
     if (!currentReport) return null;
 
     return (
-        <div className="h-screen flex flex-col bg-[#0f0a1f] text-slate-200 overflow-hidden">
+        <div className="h-screen flex flex-col bg-background text-slate-200 overflow-hidden">
             {/* Header - Fixed Height */}
-            <header className="h-16 border-b border-purple-900/20 bg-[#150d2b] flex items-center px-6 shrink-0 gap-4 z-10 relative">
+            <header className="h-16 border-b border-purple-900/20 bg-card flex items-center px-6 shrink-0 gap-4 z-10 relative">
                 <Button
                     variant="ghost"
                     size="icon"
@@ -113,8 +108,8 @@ export default function PatientReportPage() {
             {/* Content Grid - Takes remaining height */}
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 min-h-0 text-slate-200">
                 {/* Left: Report View - Independent Scroll */}
-                <div className="border-r border-purple-900/20 flex flex-col h-full min-h-0 bg-[#130d25]">
-                    <div className="p-4 border-b border-purple-900/10 bg-[#1a1233]/50 flex items-center justify-between shrink-0">
+                <div className="border-r border-purple-900/20 flex flex-col h-full min-h-0 bg-card">
+                    <div className="p-4 border-b border-purple-900/10 bg-secondary/50 flex items-center justify-between shrink-0">
                         <div className="flex items-center gap-2 text-sm font-medium text-purple-300">
                             <FileText className="w-4 h-4" />
                             Generated Report
@@ -128,8 +123,8 @@ export default function PatientReportPage() {
                 </div>
 
                 {/* Right: Chat Interface - Independent Scroll */}
-                <div className="flex flex-col h-full min-h-0 bg-[#0f0a1f]">
-                    <div className="p-4 border-b border-purple-900/10 bg-[#1a1233]/50 flex items-center justify-between shrink-0">
+                <div className="flex flex-col h-full min-h-0 bg-background">
+                    <div className="p-4 border-b border-purple-900/10 bg-secondary/50 flex items-center justify-between shrink-0">
                         <div className="flex items-center gap-2 text-sm font-medium text-emerald-300">
                             <Bot className="w-4 h-4" />
                             AI Assistant
@@ -140,7 +135,7 @@ export default function PatientReportPage() {
                         <ScrollArea className="h-full">
                             <div className="p-6 space-y-6 pb-4">
                                 {chatHistory.length === 0 && (
-                                    <div className="flex flex-col items-center justify-center h-64 text-slate-500 opacity-60">
+                                    <div className="flex flex-col items-center justify-center h-64 text-muted-foreground opacity-60">
                                         <Bot className="w-12 h-12 mb-4" />
                                         <p>Ask questions about the report above.</p>
                                     </div>
@@ -172,7 +167,7 @@ export default function PatientReportPage() {
                         </ScrollArea>
                     </div>
 
-                    <div className="p-4 border-t border-purple-900/20 bg-[#150d2b] shrink-0 z-10">
+                    <div className="p-4 border-t border-purple-900/20 bg-card shrink-0 z-10">
                         <form
                             onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
                             className="flex gap-2 relative"
@@ -181,7 +176,7 @@ export default function PatientReportPage() {
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 placeholder="Ask a follow-up question..."
-                                className="flex-1 bg-[#1e163b] border-purple-900/30 text-white focus:border-purple-500 rounded-xl pr-12 py-6"
+                                className="flex-1 bg-surface border-purple-900/30 text-white focus:border-purple-500 rounded-xl pr-12 py-6"
                                 disabled={isSending}
                             />
                             <Button

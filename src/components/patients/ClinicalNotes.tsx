@@ -82,7 +82,7 @@ export function ClinicalNotes({ initialNotes = '', onSaveNote }: ClinicalNotesPr
       <div className="flex-1 mb-4">
         <Textarea 
           placeholder="Enter clinical notes here..."
-          className="h-full min-h-[400px] resize-none bg-[#2d1b4e] border-purple-900/20 text-slate-200 placeholder:text-slate-500"
+          className="h-full min-h-[400px] resize-none bg-surface border-purple-900/20 text-slate-200 placeholder:text-muted-foreground"
           value={noteContent}
           onChange={(e) => setNoteContent(e.target.value)}
         />

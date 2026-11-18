@@ -29,7 +29,7 @@ export function PatientList({ selectedPatientId, onPatientSelect, onNewPatient }
   }, [assignedPatientIds, searchQuery]);
 
   return (
-    <div className="w-64 bg-[#1a0f2e] border-r border-purple-900/20 h-screen flex flex-col">
+    <div className="w-64 bg-popover border-r border-purple-900/20 h-screen flex flex-col">
       <div className="p-4 border-b border-purple-900/20">
         <h2 className="mb-3 text-slate-200">Patients</h2>
         <div className="relative">
@@ -38,7 +38,7 @@ export function PatientList({ selectedPatientId, onPatientSelect, onNewPatient }
             placeholder="Search patients..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 bg-[#2d1b4e] border-purple-900/20 text-slate-200 placeholder:text-slate-500"
+            className="pl-9 bg-surface border-purple-900/20 text-slate-200 placeholder:text-muted-foreground"
           />
         </div>
       </div>

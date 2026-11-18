@@ -1,115 +1,70 @@
 'use server';
 
+import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { patients, reports } from '@/lib/db/schema';
-import { eq, sql } from 'drizzle-orm';
-import { getSessionAction } from './auth';
+import { patients, type Patient } from '@/lib/db/schema';
+import { requireRole, requireUser } from '@/lib/auth/session';
+import { requirePatientAccess } from '@/lib/auth/access';
+import { patientIdSchema, patientStatusSchema, toActionFailure } from '@/lib/auth/validation';
+import { loadScopedPatients } from '@/lib/data/scoped';
+import { audit } from '@/lib/audit';
 
-/**
- * Get all patients from database (for database view)
- */
-export async function getAllPatientsAction(): Promise<{ success: boolean; patients?: any[]; error?: string }> {
+/** Patients visible to the current user (database view). */
+export async function getAllPatientsAction(): Promise<{ success: boolean; patients?: Patient[]; error?: string }> {
     try {
-        const session = await getSessionAction();
-
-        if (!session.success || !session.user) {
-            return { success: false, error: 'Unauthorized' };
-        }
-
-        const allPatients = await db.select().from(patients);
-
-        return { success: true, patients: allPatients };
+        return { success: true, patients: await loadScopedPatients(await requireUser()) };
     } catch (error) {
-        console.error('Get all patients error:', error);
-        return { success: false, error: 'Failed to fetch patients' };
+        return toActionFailure(error, 'Fetch patients');
     }
 }
 
-/**
- * Get patient statistics for dashboard
- */
+/** Status counts across the current user's patients. */
 export async function getPatientStatsAction(): Promise<{
     success: boolean;
     stats?: { total: number; pending: number; ready: number; reviewed: number };
     error?: string;
 }> {
     try {
-        const session = await getSessionAction();
-
-        if (!session.success || !session.user) {
-            return { success: false, error: 'Unauthorized' };
-        }
-
-        const allPatients = await db.select().from(patients);
-
-        const stats = {
-            total: allPatients.length,
-            pending: allPatients.filter(p => p.status === 'Pending Analysis').length,
-            ready: allPatients.filter(p => p.status === 'Results Ready').length,
-            reviewed: allPatients.filter(p => p.status === 'Reviewed').length,
+        const rows = await loadScopedPatients(await requireUser());
+        return {
+            success: true,
+            stats: {
+                total: rows.length,
+                pending: rows.filter((p) => p.status === 'Pending Analysis').length,
+                ready: rows.filter((p) => p.status === 'Results Ready').length,
+                reviewed: rows.filter((p) => p.status === 'Reviewed').length,
+            },
         };
-
-        return { success: true, stats };
     } catch (error) {
-        console.error('Get patient stats error:', error);
-        return { success: false, error: 'Failed to fetch stats' };
+        return toActionFailure(error, 'Fetch stats');
     }
 }
 
-/**
- * Get full patient details including genetic data
- */
-export async function getPatientDetailsAction(id: string): Promise<{ success: boolean; patient?: any; error?: string }> {
-    try {
-        const session = await getSessionAction();
-
-        if (!session.success || !session.user) {
-            return { success: false, error: 'Unauthorized' };
-        }
-
-        const [patient] = await db
-            .select()
-            .from(patients)
-            .where(eq(patients.id, id))
-            .limit(1);
-
-        if (!patient) {
-            return { success: false, error: 'Patient not found' };
-        }
-
-        return { success: true, patient };
-    } catch (error) {
-        console.error('Get patient details error:', error);
-        return { success: false, error: 'Failed to fetch patient details' };
-    }
-}
-
-/**
- * Update patient status
- */
 export async function updatePatientStatusAction(
     id: string,
     status: 'Pending Analysis' | 'Results Ready' | 'Reviewed'
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const session = await getSessionAction();
+        const patientId = patientIdSchema.parse(id);
+        const nextStatus = patientStatusSchema.parse(status);
+        const user = await requireRole('admin', 'clinician');
+        await requirePatientAccess(patientId);
 
-        if (!session.success || !session.user) {
-            return { success: false, error: 'Unauthorized' };
-        }
-
+        const now = new Date().toISOString();
         await db
             .update(patients)
-            .set({
-                status,
-                lastUpdated: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-            })
-            .where(eq(patients.id, id));
+            .set({ status: nextStatus, lastUpdated: now, updatedAt: now })
+            .where(eq(patients.id, patientId));
 
+        await audit({
+            action: 'patient.status_update',
+            outcome: 'success',
+            userId: user.id,
+            patientId,
+            detail: { status: nextStatus },
+        });
         return { success: true };
     } catch (error) {
-        console.error('Update patient status error:', error);
-        return { success: false, error: 'Failed to update patient status' };
+        return toActionFailure(error, 'Update patient status', 'Patient not found');
     }
 }

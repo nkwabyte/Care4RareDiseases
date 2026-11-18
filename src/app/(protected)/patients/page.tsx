@@ -116,13 +116,7 @@ export default function PatientsPage() {
 
     return (
         <>
-            <Sidebar
-                activeItem="patients"
-                onItemClick={(itemId) => {
-                    dispatch(setActiveScreen(itemId as any));
-                    router.push(`/${itemId}`);
-                }}
-            />
+            <Sidebar />
 
             <PatientList
                 selectedPatientId={selectedPatientId || ''}
@@ -137,7 +131,7 @@ export default function PatientsPage() {
                             <h1 className="text-slate-100 font-bold text-xl">{selectedPatientId}</h1>
 
                             <div className="flex justify-center">
-                                <TabsList className="bg-[#1a0f2e] p-1 border border-purple-900/20 rounded-lg">
+                                <TabsList className="bg-popover p-1 border border-purple-900/20 rounded-lg">
                                     <TabsTrigger
                                         value="info"
                                         className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg text-slate-400 hover:text-slate-200 transition-all px-6"
@@ -221,7 +215,7 @@ export default function PatientsPage() {
                                             <DNAStructureVisualization variantInfo={patientData.variantInfo} />
                                         </div>
                                         <div className="space-y-6">
-                                            <GenotypePhenotypeUpload />
+                                            <GenotypePhenotypeUpload patientId={patientData.id} />
                                             <ClinicalPhenotypes initialPhenotypes={patientData.phenotypes} />
 
                                             <Button
@@ -237,7 +231,7 @@ export default function PatientsPage() {
                             </TabsContent>
                         </>
                     ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center p-12 text-slate-500">
+                        <div className="flex-1 flex flex-col items-center justify-center p-12 text-muted-foreground">
                             <div className="mb-4 p-6 bg-slate-900/50 rounded-full border border-slate-800">
                                 <FileText className="w-12 h-12 text-slate-600" />
                             </div>
@@ -272,7 +266,7 @@ export default function PatientsPage() {
                                         style={{ width: `${analysisProgress}%` }}
                                     ></div>
                                 </div>
-                                <div className="flex justify-between text-xs font-mono text-slate-500">
+                                <div className="flex justify-between text-xs font-mono text-muted-foreground">
                                     <span>PROCESSING</span>
                                     <span>{analysisProgress.toFixed(0)}%</span>
                                 </div>

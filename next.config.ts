@@ -1,21 +1,26 @@
 import type { NextConfig } from 'next';
 
+const isProd = process.env.NODE_ENV === 'production';
+
+const securityHeaders = [
+    { key: 'X-Content-Type-Options', value: 'nosniff' },
+    { key: 'X-Frame-Options', value: 'DENY' },
+    { key: 'Referrer-Policy', value: 'no-referrer' },
+    { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=()' },
+    { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+    { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
+    ...(isProd ? [{ key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' }] : []),
+];
+
 const nextConfig: NextConfig = {
-  // Turbopack configuration (used by default in Next.js 16)
-  turbopack: {
-    resolveAlias: {
-      // Externalize better-sqlite3 for server-side rendering
-      'better-sqlite3': 'better-sqlite3',
+    poweredByHeader: false,
+    serverExternalPackages: ['better-sqlite3'],
+    experimental: {
+        serverActions: { bodySizeLimit: '1mb' },
     },
-  },
-  // Webpack configuration (for backward compatibility when using --webpack flag)
-  webpack: (config, { isServer }) => {
-    // Fix for better-sqlite3
-    if (isServer) {
-      config.externals.push('better-sqlite3');
-    }
-    return config;
-  },
+    async headers() {
+        return [{ source: '/:path*', headers: securityHeaders }];
+    },
 };
 
 export default nextConfig;

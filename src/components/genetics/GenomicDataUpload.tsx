@@ -51,7 +51,7 @@ export function GenomicDataUpload({ genomicFile }: GenomicDataUploadProps) {
         className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
           isDragging 
             ? 'border-purple-500 bg-purple-900/20' 
-            : 'border-purple-900/20 bg-[#2d1b4e]'
+            : 'border-purple-900/20 bg-surface'
         }`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}

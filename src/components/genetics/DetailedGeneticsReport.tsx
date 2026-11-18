@@ -29,7 +29,7 @@ export function DetailedGeneticsReport() {
             <Dna className="w-5 h-5 text-purple-400" />
             <h3 className="text-purple-300">Primary Gene Candidate: GATAD2B</h3>
           </div>
-          <div className="bg-[#2d1b4e] rounded-lg p-4 space-y-3">
+          <div className="bg-surface rounded-lg p-4 space-y-3">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-slate-400 mb-1">Gene Location</p>
@@ -56,11 +56,11 @@ export function DetailedGeneticsReport() {
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-slate-400">cDNA Change:</span>
-                  <span className="font-mono text-slate-100 bg-[#1a0f2e] px-2 py-1 rounded border border-purple-900/20">c.1234G&gt;A</span>
+                  <span className="font-mono text-slate-100 bg-popover px-2 py-1 rounded border border-purple-900/20">c.1234G&gt;A</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-slate-400">Protein Change:</span>
-                  <span className="font-mono text-slate-100 bg-[#1a0f2e] px-2 py-1 rounded border border-purple-900/20">p.Arg412His</span>
+                  <span className="font-mono text-slate-100 bg-popover px-2 py-1 rounded border border-purple-900/20">p.Arg412His</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-slate-400">Zygosity:</span>
@@ -114,7 +114,7 @@ export function DetailedGeneticsReport() {
         <div>
           <h3 className="text-slate-100 mb-3">Secondary Gene Candidates</h3>
           <div className="space-y-3">
-            <div className="border border-purple-900/20 rounded-lg p-4 bg-[#2d1b4e]">
+            <div className="border border-purple-900/20 rounded-lg p-4 bg-surface">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-slate-100">SMARCE1</span>
@@ -128,7 +128,7 @@ export function DetailedGeneticsReport() {
               </p>
             </div>
             
-            <div className="border border-purple-900/20 rounded-lg p-4 bg-[#2d1b4e]">
+            <div className="border border-purple-900/20 rounded-lg p-4 bg-surface">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-slate-100">CHD8</span>
@@ -173,25 +173,25 @@ export function DetailedGeneticsReport() {
         <div>
           <h3 className="text-slate-100 mb-3">Clinical Recommendations</h3>
           <div className="space-y-2">
-            <div className="flex items-start gap-3 p-3 bg-[#2d1b4e] rounded-lg border border-purple-900/20">
+            <div className="flex items-start gap-3 p-3 bg-surface rounded-lg border border-purple-900/20">
               <div className="w-6 h-6 rounded-full bg-purple-500 text-white flex items-center justify-center flex-shrink-0 mt-0.5">1</div>
               <p className="text-slate-300">
                 Confirm variant through Sanger sequencing and perform parental testing to verify de novo occurrence
               </p>
             </div>
-            <div className="flex items-start gap-3 p-3 bg-[#2d1b4e] rounded-lg border border-purple-900/20">
+            <div className="flex items-start gap-3 p-3 bg-surface rounded-lg border border-purple-900/20">
               <div className="w-6 h-6 rounded-full bg-purple-500 text-white flex items-center justify-center flex-shrink-0 mt-0.5">2</div>
               <p className="text-slate-300">
                 Genetic counseling for family regarding recurrence risk and implications of de novo mutation
               </p>
             </div>
-            <div className="flex items-start gap-3 p-3 bg-[#2d1b4e] rounded-lg border border-purple-900/20">
+            <div className="flex items-start gap-3 p-3 bg-surface rounded-lg border border-purple-900/20">
               <div className="w-6 h-6 rounded-full bg-purple-500 text-white flex items-center justify-center flex-shrink-0 mt-0.5">3</div>
               <p className="text-slate-300">
                 Multidisciplinary management including neurology for seizure management, physical therapy, and developmental support
               </p>
             </div>
-            <div className="flex items-start gap-3 p-3 bg-[#2d1b4e] rounded-lg border border-purple-900/20">
+            <div className="flex items-start gap-3 p-3 bg-surface rounded-lg border border-purple-900/20">
               <div className="w-6 h-6 rounded-full bg-purple-500 text-white flex items-center justify-center flex-shrink-0 mt-0.5">4</div>
               <p className="text-slate-300">
                 Regular neurological monitoring and developmental assessments to track disease progression

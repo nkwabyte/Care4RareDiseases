@@ -1,100 +1,39 @@
 'use server';
 
-import { db } from '@/lib/db';
-import { patients, doctorPatientAssignments } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { getSessionAction } from './auth';
+import { db } from '@/lib/db';
+import { patients, type Patient } from '@/lib/db/schema';
+import { requireUser } from '@/lib/auth/session';
+import { getPatientScope, requirePatientAccess } from '@/lib/auth/access';
+import { patientIdSchema, toActionFailure } from '@/lib/auth/validation';
+import { audit } from '@/lib/audit';
 
-/**
- * Get all patients assigned to the current doctor
- */
+/** IDs of the patients the current user may access. */
 export async function getPatientsAction(): Promise<{ success: boolean; patients?: string[]; error?: string }> {
     try {
-        const session = await getSessionAction();
+        const scope = await getPatientScope(await requireUser());
+        if (scope.kind === 'ids') return { success: true, patients: scope.ids };
 
-        if (!session.success || !session.user) {
-            return { success: false, error: 'Unauthorized' };
-        }
-
-        const doctorId = session.user.id;
-
-        // Get assigned patients for this doctor
-        const assignments = await db
-            .select({
-                patientId: doctorPatientAssignments.patientId,
-            })
-            .from(doctorPatientAssignments)
-            .where(eq(doctorPatientAssignments.doctorId, doctorId));
-
-        const patientIds = assignments.map((a) => a.patientId);
-
-        return { success: true, patients: patientIds };
+        const rows = await db.select({ id: patients.id }).from(patients);
+        return { success: true, patients: rows.map((r) => r.id) };
     } catch (error) {
-        console.error('Fetch patients error:', error);
-        return { success: false, error: 'Failed to fetch patients' };
+        return toActionFailure(error, 'Fetch patients');
     }
 }
 
-/**
- * Assign a patient to the current doctor
- */
-export async function assignPatientAction(patientId: string): Promise<{ success: boolean; error?: string }> {
+export async function getPatientByIdAction(
+    id: string
+): Promise<{ success: boolean; patient?: Patient; error?: string }> {
     try {
-        const session = await getSessionAction();
+        const patientId = patientIdSchema.parse(id);
+        const user = await requirePatientAccess(patientId);
 
-        if (!session.success || !session.user) {
-            return { success: false, error: 'Unauthorized' };
-        }
+        const [patient] = await db.select().from(patients).where(eq(patients.id, patientId)).limit(1);
+        if (!patient) return { success: false, error: 'Patient not found' };
 
-        const doctorId = session.user.id;
-
-        if (!patientId) {
-            return { success: false, error: 'Patient ID required' };
-        }
-
-        // Insert or ignore if already exists
-        await db
-            .insert(doctorPatientAssignments)
-            .values({
-                doctorId,
-                patientId,
-            })
-            .onConflictDoNothing();
-
-        return { success: true };
+        await audit({ action: 'patient.view', outcome: 'success', userId: user.id, patientId });
+        return { success: true, patient };
     } catch (error) {
-        console.error('Assign patient error:', error);
-        return { success: false, error: 'Failed to assign patient' };
-    }
-}
-
-/**
- * Get a specific patient by ID
- */
-export async function getPatientByIdAction(id: string): Promise<{ success: boolean; patient?: any; error?: string }> {
-    try {
-        const session = await getSessionAction();
-
-        if (!session.success || !session.user) {
-            return { success: false, error: 'Unauthorized' };
-        }
-
-        const [patient] = await db
-            .select()
-            .from(patients)
-            .where(eq(patients.id, id))
-            .limit(1);
-
-        if (!patient) {
-            return { success: false, error: 'Patient not found' };
-        }
-
-        return {
-            success: true,
-            patient,
-        };
-    } catch (error) {
-        console.error('Get patient error:', error);
-        return { success: false, error: 'Failed to fetch patient' };
+        return toActionFailure(error, 'Fetch patient', 'Patient not found');
     }
 }

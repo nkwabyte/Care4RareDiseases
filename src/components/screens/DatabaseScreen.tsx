@@ -43,7 +43,6 @@ export function DatabaseScreen({ onPatientClick }: DatabaseScreenProps) {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('newest');
   const { assignedPatientIds, isLoading: isLoadingAssigned } = useAssignedPatients();
-  const doctor = useAppSelector((state) => state.auth.doctor);
   const dispatch = useAppDispatch();
   const { patients, isLoading: isLoadingDatabase } = useAppSelector((state) => state.database);
 
@@ -66,11 +65,10 @@ export function DatabaseScreen({ onPatientClick }: DatabaseScreenProps) {
     }
   };
 
-  // Map patients to show current doctor's name
   const patientsWithCurrentDoctor = patients.map((patient: any) => ({
     ...patient,
     patientId: patient.id || patient.patientId,
-    assignedClinician: doctor?.name || patient.assignedClinician || 'Unassigned'
+    assignedClinician: patient.assignedClinician || 'Unassigned'
   }));
 
   const filteredAndSortedPatients = patientsWithCurrentDoctor.filter((patient) => {
@@ -110,10 +108,10 @@ export function DatabaseScreen({ onPatientClick }: DatabaseScreenProps) {
           <div className="flex items-center gap-3">
             {/* Filter by Status */}
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-56 bg-[#2d1b4e] border-purple-900/20 text-slate-200">
+              <SelectTrigger className="w-56 bg-surface border-purple-900/20 text-slate-200">
                 <SelectValue placeholder="Filter by Status" />
               </SelectTrigger>
-              <SelectContent className="bg-[#1a0f2e] border-purple-900/20">
+              <SelectContent className="bg-popover border-purple-900/20">
                 <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="Pending Analysis">Pending Analysis</SelectItem>
                 <SelectItem value="Results Ready">Results Ready</SelectItem>
@@ -123,10 +121,10 @@ export function DatabaseScreen({ onPatientClick }: DatabaseScreenProps) {
 
             {/* Sort by Last Updated */}
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-56 bg-[#2d1b4e] border-purple-900/20 text-slate-200">
+              <SelectTrigger className="w-56 bg-surface border-purple-900/20 text-slate-200">
                 <SelectValue placeholder="Sort by Last Updated" />
               </SelectTrigger>
-              <SelectContent className="bg-[#1a0f2e] border-purple-900/20">
+              <SelectContent className="bg-popover border-purple-900/20">
                 <SelectItem value="newest">Newest First</SelectItem>
                 <SelectItem value="oldest">Oldest First</SelectItem>
               </SelectContent>
@@ -143,7 +141,7 @@ export function DatabaseScreen({ onPatientClick }: DatabaseScreenProps) {
                 placeholder="Search Patients"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 w-64 bg-[#2d1b4e] border-purple-900/20 text-slate-200 placeholder:text-slate-500"
+                className="pl-10 w-64 bg-surface border-purple-900/20 text-slate-200 placeholder:text-muted-foreground"
               />
             </div>
           </div>

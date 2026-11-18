@@ -19,13 +19,7 @@ export default function DatabasePage() {
 
     return (
         <>
-            <Sidebar
-                activeItem="database"
-                onItemClick={(itemId) => {
-                    dispatch(setActiveScreen(itemId as any));
-                    router.push(`/${itemId}`);
-                }}
-            />
+            <Sidebar />
             <DatabaseScreen onPatientClick={handlePatientClick} />
         </>
     );

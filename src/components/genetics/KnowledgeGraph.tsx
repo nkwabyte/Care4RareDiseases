@@ -45,7 +45,7 @@ export function KnowledgeGraph({ graphData }: KnowledgeGraphProps) {
     <Card className="p-6 bg-card border-border h-full">
       <h3 className="mb-4 text-slate-100">Diagnostic Knowledge Graph</h3>
 
-      <div className="bg-[#2d1b4e] rounded-lg p-6 h-[calc(100%-3rem)] flex flex-col">
+      <div className="bg-surface rounded-lg p-6 h-[calc(100%-3rem)] flex flex-col">
         <svg width="100%" height="100%" viewBox="0 0 800 500" className="overflow-visible flex-1">
           {/* Edges */}
           {edges.map((edge, index) => {

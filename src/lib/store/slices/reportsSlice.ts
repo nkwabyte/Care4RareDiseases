@@ -54,9 +54,9 @@ export const fetchReportById = createAsyncThunk(
 // Async thunk for generating a new report
 export const generateReport = createAsyncThunk(
     'reports/generateReport',
-    async ({ patientId, patientName }: { patientId: string; patientName: string }, { rejectWithValue }) => {
+    async (patientId: string, { rejectWithValue }) => {
         try {
-            const result = await generateReportAction(patientId, patientName);
+            const result = await generateReportAction(patientId);
 
             if (!result.success) {
                 return rejectWithValue(result.error || 'Failed to generate report');

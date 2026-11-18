@@ -1,30 +1,24 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { DashboardScreen } from '@/components/screens';
 import { Sidebar } from '@/components/layout';
-import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
-import { setActiveScreen } from '@/lib/store/slices/uiSlice';
-import { useRouter } from 'next/navigation';
+import { useAppDispatch } from '@/lib/store/hooks';
+import { setSelectedPatient } from '@/lib/store/slices/patientSlice';
 
 export default function DashboardPage() {
     const router = useRouter();
     const dispatch = useAppDispatch();
 
-    const handleNavigateToPatients = () => {
-        dispatch(setActiveScreen('patients'));
-        router.push('/patients');
-    };
-
     return (
         <>
-            <Sidebar
-                activeItem="dashboard"
-                onItemClick={(itemId) => {
-                    dispatch(setActiveScreen(itemId as any));
-                    router.push(`/${itemId}`);
+            <Sidebar />
+            <DashboardScreen
+                onOpenPatient={(patientId) => {
+                    dispatch(setSelectedPatient(patientId));
+                    router.push('/patients');
                 }}
             />
-            <DashboardScreen onNavigateToPatients={handleNavigateToPatients} />
         </>
     );
 }

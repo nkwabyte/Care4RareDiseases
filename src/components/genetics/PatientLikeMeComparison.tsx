@@ -243,7 +243,7 @@ export function PatientLikeMeComparison({ gene = 'GATAD2B' }: PatientLikeMeCompa
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="bg-[#2d1b4e] border border-purple-900/20 rounded-lg p-4">
+          <div className="bg-surface border border-purple-900/20 rounded-lg p-4">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-slate-400 mt-0.5 flex-shrink-0" />
               <div className="flex-1">
@@ -340,7 +340,7 @@ export function PatientLikeMeComparison({ gene = 'GATAD2B' }: PatientLikeMeCompa
 
         {/* Statistics Grid */}
         <div className="grid grid-cols-4 gap-4">
-          <div className="bg-[#2d1b4e] border border-purple-900/20 rounded-lg p-4">
+          <div className="bg-surface border border-purple-900/20 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <Users className="w-4 h-4 text-slate-400" />
               <p className="text-slate-400">Total Cases</p>
@@ -349,7 +349,7 @@ export function PatientLikeMeComparison({ gene = 'GATAD2B' }: PatientLikeMeCompa
             <p className="text-slate-400 mt-1">Globally registered</p>
           </div>
 
-          <div className="bg-[#2d1b4e] border border-purple-900/20 rounded-lg p-4">
+          <div className="bg-surface border border-purple-900/20 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <CheckCircle2 className="w-4 h-4 text-slate-400" />
               <p className="text-slate-400">Similar Phenotype</p>
@@ -358,7 +358,7 @@ export function PatientLikeMeComparison({ gene = 'GATAD2B' }: PatientLikeMeCompa
             <p className="text-slate-400 mt-1">Match ≥75%</p>
           </div>
 
-          <div className="bg-[#2d1b4e] border border-purple-900/20 rounded-lg p-4">
+          <div className="bg-surface border border-purple-900/20 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="w-4 h-4 text-slate-400" />
               <p className="text-slate-400">Age Range</p>
@@ -367,7 +367,7 @@ export function PatientLikeMeComparison({ gene = 'GATAD2B' }: PatientLikeMeCompa
             <p className="text-slate-400 mt-1">Median: {data.ageMedian}</p>
           </div>
 
-          <div className="bg-[#2d1b4e] border border-purple-900/20 rounded-lg p-4">
+          <div className="bg-surface border border-purple-900/20 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <Users className="w-4 h-4 text-slate-400" />
               <p className="text-slate-400">De Novo Cases</p>
@@ -382,7 +382,7 @@ export function PatientLikeMeComparison({ gene = 'GATAD2B' }: PatientLikeMeCompa
           <h3 className="text-slate-100 mb-3">Most Reported Characteristics in Community</h3>
           <div className="grid grid-cols-2 gap-3">
             {data.characteristics.map((char: any, index: number) => (
-              <div key={index} className="bg-[#2d1b4e] border border-purple-900/20 rounded-lg p-3">
+              <div key={index} className="bg-surface border border-purple-900/20 rounded-lg p-3">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-slate-100">{char.name}</span>
                   <Badge variant="outline" className="text-slate-300 border-purple-900/20">{char.percent}%</Badge>
@@ -400,7 +400,7 @@ export function PatientLikeMeComparison({ gene = 'GATAD2B' }: PatientLikeMeCompa
           <h3 className="text-slate-100 mb-3">Community Treatment Insights</h3>
           <div className="space-y-2">
             {data.treatments.map((treatment: any, index: number) => (
-              <div key={index} className="bg-[#2d1b4e] border border-purple-900/20 rounded-lg p-3">
+              <div key={index} className="bg-surface border border-purple-900/20 rounded-lg p-3">
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-full bg-purple-500/20 text-purple-300 flex items-center justify-center flex-shrink-0">
                     {index + 1}

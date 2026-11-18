@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,160 +13,270 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { User, Bell, Eye, Shield, Database, Palette, LogOut } from 'lucide-react';
+import { User, Bell, Eye, Shield, Database, LogOut, KeyRound, MonitorSmartphone } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '@/lib/store/hooks';
 import { logout } from '@/lib/store/slices/authSlice';
+import {
+  changePasswordAction,
+  getSecurityPolicyAction,
+  signOutEverywhereAction,
+} from '@/lib/actions/auth';
 import { toast } from 'sonner';
+
+const ROLE_LABELS: Record<string, string> = {
+  admin: 'Administrator',
+  clinician: 'Clinician',
+  researcher: 'Researcher',
+  user: 'User',
+};
+
+type Policy = { sessionMaxHours: number; idleTimeoutMinutes: number; maxFailedLogins: number; minPasswordLength: number };
+
+function PreviewBadge() {
+  return (
+    <span className="text-[11px] font-medium uppercase tracking-wide text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded px-1.5 py-0.5">
+      Not yet available
+    </span>
+  );
+}
+
+function ReadOnlyField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="space-y-1">
+      <p className="text-sm text-slate-400">{label}</p>
+      <p className="text-slate-100">{value}</p>
+    </div>
+  );
+}
 
 export function SettingsScreen() {
   const dispatch = useAppDispatch();
-  const doctor = useAppSelector((state) => state.auth.doctor);
+  const router = useRouter();
+  const user = useAppSelector((state) => state.auth.doctor);
 
-  // User Profile
-  const [fullName, setFullName] = useState(doctor?.name || '');
-  const [email, setEmail] = useState(doctor?.email || '');
-  const [role, setRole] = useState('geneticist');
-  const [department, setDepartment] = useState(doctor?.specialty || 'Genetics');
-
-  // Notifications
+  // Preview-only controls (not persisted; disabled in the UI)
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [analysisComplete, setAnalysisComplete] = useState(true);
   const [newPatientAssigned, setNewPatientAssigned] = useState(true);
   const [weeklyDigest, setWeeklyDigest] = useState(false);
-
-  // Display Preferences
   const [language, setLanguage] = useState('en');
   const [timezone, setTimezone] = useState('Africa/Accra');
   const [dateFormat, setDateFormat] = useState('MM/DD/YYYY');
   const [compactView, setCompactView] = useState(false);
-
-  // Analysis Settings
   const [autoSave, setAutoSave] = useState(true);
   const [confidenceThreshold, setConfidenceThreshold] = useState('0.8');
   const [maxCandidateGenes, setMaxCandidateGenes] = useState('10');
 
-  // Privacy & Security
-  const [twoFactorAuth, setTwoFactorAuth] = useState(false);
-  const [sessionTimeout, setSessionTimeout] = useState('30');
-  const [dataRetention, setDataRetention] = useState('5years');
+  // Security (real)
+  const [policy, setPolicy] = useState<Policy | null>(null);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [isSigningOutAll, setIsSigningOutAll] = useState(false);
 
-  const handleSaveSettings = () => {
-    console.log('Settings saved');
-    toast.success('Settings saved successfully', {
-      description: 'Your preferences have been updated.',
-    });
-  };
+  useEffect(() => {
+    getSecurityPolicyAction().then((r) => r.success && r.policy && setPolicy(r.policy));
+  }, []);
 
   const handleLogout = async () => {
     await dispatch(logout());
-    toast.success('Logged out successfully', {
-      description: 'You have been securely logged out.',
-    });
+    router.push('/login');
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError(null);
+    if (newPassword !== confirmPassword) {
+      setPasswordError('New passwords do not match');
+      return;
+    }
+    setIsChangingPassword(true);
+    const result = await changePasswordAction(currentPassword, newPassword);
+    setIsChangingPassword(false);
+    if (!result.success) {
+      setPasswordError(result.error ?? 'Could not change password');
+      return;
+    }
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+    toast.success('Password changed', { description: 'All other sessions have been signed out.' });
+  };
+
+  const handleSignOutEverywhere = async () => {
+    setIsSigningOutAll(true);
+    const result = await signOutEverywhereAction();
+    setIsSigningOutAll(false);
+    if (!result.success) {
+      toast.error(result.error ?? 'Could not sign out other sessions');
+      return;
+    }
+    await dispatch(logout());
+    router.push('/login');
   };
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-background">
-      {/* Top Header */}
       <div className="bg-card border-b border-border px-6 py-4">
         <div className="flex items-center justify-between">
-          {/* Left: Title */}
           <h1 className="text-slate-100">Settings</h1>
-
-          {/* Right: Action Buttons */}
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              className="border-red-500/20 text-red-400 hover:bg-red-500/10 hover:text-red-300 gap-2"
-              onClick={handleLogout}
-            >
-              <LogOut size={16} />
-              Logout
-            </Button>
-            <Button
-              className="bg-purple-600 hover:bg-purple-700 px-8"
-              onClick={handleSaveSettings}
-            >
-              Save Changes
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            className="border-red-500/20 text-red-400 hover:bg-red-500/10 hover:text-red-300 gap-2"
+            onClick={handleLogout}
+          >
+            <LogOut size={16} aria-hidden />
+            Log out
+          </Button>
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 overflow-auto p-6">
         <div className="max-w-5xl mx-auto space-y-6">
-          {/* User Profile Section */}
           <Card className="bg-card border-border">
             <div className="p-6">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                  <User size={20} className="text-purple-400" />
+                  <User size={20} className="text-purple-400" aria-hidden />
                 </div>
                 <div>
-                  <h2>User Profile</h2>
-                  <p className="text-slate-500">Manage your personal information</p>
+                  <h2 className="text-slate-100">Account</h2>
+                  <p className="text-slate-400">Name, email and role are managed by your administrator.</p>
                 </div>
               </div>
-
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="fullName" className="text-slate-200">Full Name</Label>
-                  <Input
-                    id="fullName"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="bg-[#2d1b4e] border-purple-900/20 text-slate-200"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-slate-200">Email Address</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="bg-[#2d1b4e] border-purple-900/20 text-slate-200"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="role" className="text-slate-200">Role</Label>
-                  <Select value={role} onValueChange={setRole}>
-                    <SelectTrigger id="role" className="bg-[#2d1b4e] border-purple-900/20 text-slate-200">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-[#1a0f2e] border-purple-900/20">
-                      <SelectItem value="geneticist">Geneticist</SelectItem>
-                      <SelectItem value="physician">Physician</SelectItem>
-                      <SelectItem value="researcher">Researcher</SelectItem>
-                      <SelectItem value="counselor">Genetic Counselor</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="department" className="text-slate-200">Department</Label>
-                  <Input
-                    id="department"
-                    value={department}
-                    onChange={(e) => setDepartment(e.target.value)}
-                    className="bg-[#2d1b4e] border-purple-900/20 text-slate-200"
-                  />
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <ReadOnlyField label="Full name" value={user?.name ?? '—'} />
+                <ReadOnlyField label="Email" value={user?.email ?? '—'} />
+                <ReadOnlyField label="Role" value={ROLE_LABELS[user?.role ?? ''] ?? '—'} />
               </div>
             </div>
           </Card>
 
-          {/* Notifications Section */}
           <Card className="bg-card border-border">
             <div className="p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                  <Shield size={20} className="text-purple-400" aria-hidden />
+                </div>
+                <div>
+                  <h2 className="text-slate-100">Security</h2>
+                  <p className="text-slate-400">Policies enforced for every account on this system.</p>
+                </div>
+              </div>
+
+              {policy && (
+                <dl className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                  <div className="rounded-lg border border-purple-900/30 p-4">
+                    <dt className="text-sm text-slate-400">Idle sign-out</dt>
+                    <dd className="text-slate-100 mt-1">After {policy.idleTimeoutMinutes} minutes of inactivity</dd>
+                  </div>
+                  <div className="rounded-lg border border-purple-900/30 p-4">
+                    <dt className="text-sm text-slate-400">Maximum session length</dt>
+                    <dd className="text-slate-100 mt-1">{policy.sessionMaxHours} hours</dd>
+                  </div>
+                  <div className="rounded-lg border border-purple-900/30 p-4">
+                    <dt className="text-sm text-slate-400">Failed sign-in lockout</dt>
+                    <dd className="text-slate-100 mt-1">After {policy.maxFailedLogins} attempts, for 15 minutes</dd>
+                  </div>
+                </dl>
+              )}
+
+              <Separator className="bg-purple-900/20 mb-6" />
+
+              <form onSubmit={handleChangePassword} className="space-y-4" noValidate>
+                <h3 className="text-slate-100 flex items-center gap-2">
+                  <KeyRound size={16} className="text-purple-400" aria-hidden /> Change password
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="currentPassword" className="text-slate-200">Current password</Label>
+                    <Input
+                      id="currentPassword"
+                      type="password"
+                      autoComplete="current-password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      className="bg-surface border-purple-900/20 text-slate-200"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="newPassword" className="text-slate-200">New password</Label>
+                    <Input
+                      id="newPassword"
+                      type="password"
+                      autoComplete="new-password"
+                      minLength={policy?.minPasswordLength ?? 12}
+                      aria-describedby="newPasswordHint"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="bg-surface border-purple-900/20 text-slate-200"
+                      required
+                    />
+                    <p id="newPasswordHint" className="text-xs text-slate-400">
+                      At least {policy?.minPasswordLength ?? 12} characters. A passphrase works well.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword" className="text-slate-200">Confirm new password</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      autoComplete="new-password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="bg-surface border-purple-900/20 text-slate-200"
+                      required
+                    />
+                  </div>
+                </div>
+                {passwordError && (
+                  <p role="alert" className="text-sm text-red-400">{passwordError}</p>
+                )}
+                <Button
+                  type="submit"
+                  className="bg-purple-600 hover:bg-purple-700"
+                  disabled={isChangingPassword || !currentPassword || !newPassword || !confirmPassword}
+                >
+                  {isChangingPassword ? 'Changing…' : 'Change password'}
+                </Button>
+              </form>
+
+              <Separator className="bg-purple-900/20 my-6" />
+
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-slate-100 flex items-center gap-2">
+                    <MonitorSmartphone size={16} className="text-purple-400" aria-hidden /> Sign out everywhere
+                  </h3>
+                  <p className="text-slate-400 text-sm">Ends every session on all devices, including this one.</p>
+                </div>
+                <Button
+                  variant="outline"
+                  className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                  onClick={handleSignOutEverywhere}
+                  disabled={isSigningOutAll}
+                >
+                  {isSigningOutAll ? 'Signing out…' : 'Sign out all sessions'}
+                </Button>
+              </div>
+            </div>
+          </Card>
+
+          <p id="preview-note" className="text-sm text-slate-400">
+            The sections below are design previews. Their settings are not saved yet.
+          </p>
+          {/* Notifications Section */}
+          <Card className="bg-card border-border">
+            <fieldset disabled className="p-6 disabled:opacity-60" aria-describedby="preview-note">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
                   <Bell size={20} className="text-purple-400" />
                 </div>
                 <div>
-                  <h2 className="text-slate-100">Notifications</h2>
+                  <h2 className="text-slate-100 flex items-center gap-2">Notifications <PreviewBadge /></h2>
                   <p className="text-slate-400">Configure how you receive updates</p>
                 </div>
               </div>
@@ -173,8 +284,8 @@ export function SettingsScreen() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between py-3">
                   <div>
-                    <p className="text-slate-900">Email Notifications</p>
-                    <p className="text-slate-500">Receive notifications via email</p>
+                    <p className="text-slate-100">Email Notifications</p>
+                    <p className="text-muted-foreground">Receive notifications via email</p>
                   </div>
                   <Switch
                     checked={emailNotifications}
@@ -186,8 +297,8 @@ export function SettingsScreen() {
 
                 <div className="flex items-center justify-between py-3">
                   <div>
-                    <p className="text-slate-900">Analysis Complete</p>
-                    <p className="text-slate-500">Notify when patient analysis is complete</p>
+                    <p className="text-slate-100">Analysis Complete</p>
+                    <p className="text-muted-foreground">Notify when patient analysis is complete</p>
                   </div>
                   <Switch
                     checked={analysisComplete}
@@ -199,8 +310,8 @@ export function SettingsScreen() {
 
                 <div className="flex items-center justify-between py-3">
                   <div>
-                    <p className="text-slate-900">New Patient Assigned</p>
-                    <p className="text-slate-500">Notify when a new patient is assigned to you</p>
+                    <p className="text-slate-100">New Patient Assigned</p>
+                    <p className="text-muted-foreground">Notify when a new patient is assigned to you</p>
                   </div>
                   <Switch
                     checked={newPatientAssigned}
@@ -212,8 +323,8 @@ export function SettingsScreen() {
 
                 <div className="flex items-center justify-between py-3">
                   <div>
-                    <p className="text-slate-900">Weekly Digest</p>
-                    <p className="text-slate-500">Receive a weekly summary of your cases</p>
+                    <p className="text-slate-100">Weekly Digest</p>
+                    <p className="text-muted-foreground">Receive a weekly summary of your cases</p>
                   </div>
                   <Switch
                     checked={weeklyDigest}
@@ -221,18 +332,18 @@ export function SettingsScreen() {
                   />
                 </div>
               </div>
-            </div>
+            </fieldset>
           </Card>
 
           {/* Display Preferences Section */}
           <Card className="bg-card border-border">
-            <div className="p-6">
+            <fieldset disabled className="p-6 disabled:opacity-60" aria-describedby="preview-note">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
                   <Eye size={20} className="text-purple-400" />
                 </div>
                 <div>
-                  <h2 className="text-slate-100">Display Preferences</h2>
+                  <h2 className="text-slate-100 flex items-center gap-2">Display Preferences <PreviewBadge /></h2>
                   <p className="text-slate-400">Customize your viewing experience</p>
                 </div>
               </div>
@@ -242,10 +353,10 @@ export function SettingsScreen() {
                   <div className="space-y-2">
                     <Label htmlFor="language" className="text-slate-200">Language</Label>
                     <Select value={language} onValueChange={setLanguage}>
-                      <SelectTrigger id="language" className="bg-[#2d1b4e] border-purple-900/20 text-slate-200">
+                      <SelectTrigger id="language" className="bg-surface border-purple-900/20 text-slate-200">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="bg-[#1a0f2e] border-purple-900/20">
+                      <SelectContent className="bg-popover border-purple-900/20">
                         <SelectItem value="en">English</SelectItem>
                         <SelectItem value="es">Spanish</SelectItem>
                         <SelectItem value="fr">French</SelectItem>
@@ -257,10 +368,10 @@ export function SettingsScreen() {
                   <div className="space-y-2">
                     <Label htmlFor="timezone" className="text-slate-200">Timezone</Label>
                     <Select value={timezone} onValueChange={setTimezone}>
-                      <SelectTrigger id="timezone" className="bg-[#2d1b4e] border-purple-900/20 text-slate-200">
+                      <SelectTrigger id="timezone" className="bg-surface border-purple-900/20 text-slate-200">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="bg-[#1a0f2e] border-purple-900/20">
+                      <SelectContent className="bg-popover border-purple-900/20">
                         <SelectItem value="GMT">GMT (Greenwich Mean Time)</SelectItem>
                         <SelectItem value="UTC">UTC (Coordinated Universal Time)</SelectItem>
                         <SelectItem value="Africa/Cairo">Cairo (GMT+2)</SelectItem>
@@ -288,10 +399,10 @@ export function SettingsScreen() {
                   <div className="space-y-2">
                     <Label htmlFor="dateFormat" className="text-slate-200">Date Format</Label>
                     <Select value={dateFormat} onValueChange={setDateFormat}>
-                      <SelectTrigger id="dateFormat" className="bg-[#2d1b4e] border-purple-900/20 text-slate-200">
+                      <SelectTrigger id="dateFormat" className="bg-surface border-purple-900/20 text-slate-200">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="bg-[#1a0f2e] border-purple-900/20">
+                      <SelectContent className="bg-popover border-purple-900/20">
                         <SelectItem value="MM/DD/YYYY">MM/DD/YYYY</SelectItem>
                         <SelectItem value="DD/MM/YYYY">DD/MM/YYYY</SelectItem>
                         <SelectItem value="YYYY-MM-DD">YYYY-MM-DD</SelectItem>
@@ -313,18 +424,18 @@ export function SettingsScreen() {
                   />
                 </div>
               </div>
-            </div>
+            </fieldset>
           </Card>
 
           {/* Analysis Settings Section */}
           <Card className="bg-card border-border">
-            <div className="p-6">
+            <fieldset disabled className="p-6 disabled:opacity-60" aria-describedby="preview-note">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
                   <Database size={20} className="text-purple-400" />
                 </div>
                 <div>
-                  <h2 className="text-slate-100">Analysis Settings</h2>
+                  <h2 className="text-slate-100 flex items-center gap-2">Analysis Settings <PreviewBadge /></h2>
                   <p className="text-slate-400">Configure diagnostic analysis parameters</p>
                 </div>
               </div>
@@ -347,10 +458,10 @@ export function SettingsScreen() {
                   <div className="space-y-2">
                     <Label htmlFor="confidenceThreshold" className="text-slate-200">Confidence Threshold</Label>
                     <Select value={confidenceThreshold} onValueChange={setConfidenceThreshold}>
-                      <SelectTrigger id="confidenceThreshold" className="bg-[#2d1b4e] border-purple-900/20 text-slate-200">
+                      <SelectTrigger id="confidenceThreshold" className="bg-surface border-purple-900/20 text-slate-200">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="bg-[#1a0f2e] border-purple-900/20">
+                      <SelectContent className="bg-popover border-purple-900/20">
                         <SelectItem value="0.6">60% (Low)</SelectItem>
                         <SelectItem value="0.7">70% (Medium-Low)</SelectItem>
                         <SelectItem value="0.8">80% (Medium)</SelectItem>
@@ -363,10 +474,10 @@ export function SettingsScreen() {
                   <div className="space-y-2">
                     <Label htmlFor="maxCandidateGenes" className="text-slate-200">Max Candidate Genes</Label>
                     <Select value={maxCandidateGenes} onValueChange={setMaxCandidateGenes}>
-                      <SelectTrigger id="maxCandidateGenes" className="bg-[#2d1b4e] border-purple-900/20 text-slate-200">
+                      <SelectTrigger id="maxCandidateGenes" className="bg-surface border-purple-900/20 text-slate-200">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="bg-[#1a0f2e] border-purple-900/20">
+                      <SelectContent className="bg-popover border-purple-900/20">
                         <SelectItem value="5">5 genes</SelectItem>
                         <SelectItem value="10">10 genes</SelectItem>
                         <SelectItem value="15">15 genes</SelectItem>
@@ -376,102 +487,7 @@ export function SettingsScreen() {
                   </div>
                 </div>
               </div>
-            </div>
-          </Card>
-
-          {/* Privacy & Security Section */}
-          <Card className="bg-card border-border">
-            <div className="p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                  <Shield size={20} className="text-purple-400" />
-                </div>
-                <div>
-                  <h2 className="text-slate-100">Privacy & Security</h2>
-                  <p className="text-slate-400">Manage your security preferences</p>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <div className="flex items-center justify-between py-3">
-                  <div>
-                    <p className="text-slate-100">Two-Factor Authentication</p>
-                    <p className="text-slate-400">Add an extra layer of security to your account</p>
-                  </div>
-                  <Switch
-                    checked={twoFactorAuth}
-                    onCheckedChange={setTwoFactorAuth}
-                  />
-                </div>
-
-                <Separator className="bg-purple-900/20" />
-
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="sessionTimeout" className="text-slate-200">Session Timeout (minutes)</Label>
-                    <Select value={sessionTimeout} onValueChange={setSessionTimeout}>
-                      <SelectTrigger id="sessionTimeout" className="bg-[#2d1b4e] border-purple-900/20 text-slate-200">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-[#1a0f2e] border-purple-900/20">
-                        <SelectItem value="15">15 minutes</SelectItem>
-                        <SelectItem value="30">30 minutes</SelectItem>
-                        <SelectItem value="60">1 hour</SelectItem>
-                        <SelectItem value="120">2 hours</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="dataRetention" className="text-slate-200">Data Retention Period</Label>
-                    <Select value={dataRetention} onValueChange={setDataRetention}>
-                      <SelectTrigger id="dataRetention" className="bg-[#2d1b4e] border-purple-900/20 text-slate-200">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-[#1a0f2e] border-purple-900/20">
-                        <SelectItem value="1year">1 year</SelectItem>
-                        <SelectItem value="3years">3 years</SelectItem>
-                        <SelectItem value="5years">5 years</SelectItem>
-                        <SelectItem value="10years">10 years</SelectItem>
-                        <SelectItem value="indefinite">Indefinite</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <Separator className="bg-purple-900/20" />
-
-                <div className="space-y-3">
-                  <Button variant="outline" className="w-full justify-start border-purple-900/20 text-slate-200 hover:bg-purple-900/30 hover:text-slate-100">
-                    Change Password
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start border-purple-900/20 text-slate-200 hover:bg-purple-900/30 hover:text-slate-100">
-                    Download My Data
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* Danger Zone */}
-          <Card className="bg-card border-red-500/30">
-            <div className="p-6">
-              <div className="mb-4">
-                <h2 className="text-red-400">Danger Zone</h2>
-                <p className="text-slate-400">Irreversible actions</p>
-              </div>
-
-              <Separator className="mb-6 bg-red-500/20" />
-
-              <div className="space-y-3">
-                <Button variant="outline" className="w-full justify-start text-red-400 border-red-500/30 hover:bg-red-500/10 hover:text-red-300">
-                  Clear All Cache Data
-                </Button>
-                <Button variant="outline" className="w-full justify-start text-red-400 border-red-500/30 hover:bg-red-500/10 hover:text-red-300">
-                  Deactivate Account
-                </Button>
-              </div>
-            </div>
+            </fieldset>
           </Card>
         </div>
       </div>

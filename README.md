@@ -4,10 +4,10 @@ A Next.js application for managing rare disease patient data with AI-powered ana
 
 ## 🚀 Tech Stack
 
-- **Framework**: Next.js 15 with App Router
+- **Framework**: Next.js 16 with App Router (Server Actions)
 - **Database**: SQLite with Drizzle ORM
 - **State Management**: Redux Toolkit
-- **Authentication**: JWT-based sessions with httpOnly cookies
+- **Authentication**: Database-backed sessions (opaque token, SHA-256 hashed at rest) in httpOnly cookies
 - **Styling**: Tailwind CSS + shadcn/ui components
 - **Package Manager**: yarn
 - **Password Hashing**: bcryptjs
@@ -26,7 +26,7 @@ A Next.js application for managing rare disease patient data with AI-powered ana
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 20.9+ (Next.js 16 requirement)
 - yarn (recommended) or npm
 
 ### 1. Clone and Install
@@ -46,41 +46,26 @@ yarn install
 
 ### 2. Environment Variables
 
-Create a `.env.local` file in the root directory:
-
 ```bash
 cp .env.example .env.local
 ```
 
-Update the values:
+| Variable | Required | Purpose |
+|----------|----------|---------|
+| `GEMINI_API_KEY` | For AI features | Google Gemini key, used server-side only |
+| `DATABASE_PATH` | No | SQLite file (default `./data/care4rare.db`) |
+| `SEED_ADMIN_PASSWORD`, `SEED_CLINICIAN_PASSWORD` | No | Initial passwords for `yarn db:seed`; random ones are generated and printed if unset |
 
-```env
-JWT_SECRET=your-very-long-random-secret-key-at-least-32-characters
-NODE_ENV=development
-```
-
-> **Security**: Generate a strong JWT secret using: `openssl rand -base64 32`
+There is no signing secret to manage: sessions are random tokens looked up in the database.
 
 ### 3. Database Setup
 
-#### Push Schema to Database
-
 ```bash
-yarn db:push
+yarn db:apply   # apply all pending migrations in ./drizzle (safe to re-run)
+yarn db:seed    # create the initial admin and clinician accounts
 ```
 
-This creates all necessary tables in the SQLite database.
-
-#### Seed Initial Data
-
-```bash
-yarn db:seed
-```
-
-This populates the database with:
-- 4 default users (1 admin + 3 clinicians)
-- 9 patients with full clinical data
-- 4 sample reports
+`data/` is git-ignored: patient data must never be committed.
 
 ### 4. Start Development Server
 
@@ -90,18 +75,16 @@ yarn dev
 
 The application will be available at **http://localhost:3000**
 
-## 🔐 Default Credentials
+## 🔐 Initial Accounts
 
-After seeding, you can log in with:
+`yarn db:seed` creates one admin and three clinician accounts. Passwords come from
+`SEED_ADMIN_PASSWORD` / `SEED_CLINICIAN_PASSWORD`, or are randomly generated and printed once.
 
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@care4rare.com | admin123 |
-| Clinician | dr.asante@care4rare.com | clinician123 |
-| Clinician | dr.mensah@care4rare.com | clinician123 |
-| Clinician | dr.osei@care4rare.com | clinician123 |
+Reset any account's password (also signs it out everywhere):
 
-> **⚠️ Important**: Change these passwords before deploying to production!
+```bash
+yarn user:set-password admin@care4rare.com
+```
 
 ## 📁 Project Structure
 
@@ -199,58 +182,54 @@ Patient reports
 | dateGenerated | TEXT | Report generation date |
 | generatedBy | TEXT | Clinician who generated report |
 
-### doctors (Legacy)
-Doctor accounts (maintained for backward compatibility)
-
-| Column | Type | Description |
-|--------|------|-------------|
-| id | INTEGER | Primary key |
-| email | TEXT | Unique email |
-| passwordHash | TEXT | Bcrypt hashed password |
-| name | TEXT | Doctor's name |
-| specialty | TEXT | Medical specialty |
-
 ### sessions
-Active user sessions
 
 | Column | Type | Description |
 |--------|------|-------------|
 | id | INTEGER | Primary key |
-| doctorId | INTEGER | Foreign key to doctors |
-| token | TEXT | JWT token |
-| expiresAt | TIMESTAMP | Session expiration |
+| user_id | INTEGER | Foreign key to users |
+| token_hash | TEXT | SHA-256 of the session token (the token itself is never stored) |
+| expires_at | TEXT | Absolute expiry (8 h after sign-in) |
+| last_seen_at | TEXT | Used for the 30-minute idle timeout |
+| created_at | TEXT | Creation time |
 
 ### doctor_patient_assignments
-Doctor-patient relationships
+
+Which clinician may see which patient. Unique on (doctor_id, patient_id).
 
 | Column | Type | Description |
 |--------|------|-------------|
 | id | INTEGER | Primary key |
-| doctorId | INTEGER | Foreign key to doctors |
-| patientId | TEXT | Patient identifier |
-| assignedAt | TIMESTAMP | Assignment time |
+| doctor_id | INTEGER | Foreign key to **users** (clinician) |
+| patient_id | TEXT | Foreign key to patients |
+| assigned_at | TEXT | Assignment time |
 
-## 🔌 API Endpoints
+### audit_events
 
-### Authentication
+Append-only record of sign-ins, lockouts, password changes, patient views, denied access, status changes, report creation and every AI request (patient data sent to Gemini).
 
-- **POST** `/api/auth/login` - Login with email and password
-  ```json
-  { "email": "admin@care4rare.com", "password": "admin123" }
-  ```
+| Column | Type | Description |
+|--------|------|-------------|
+| at | TEXT | Timestamp |
+| user_id | INTEGER | Acting user (nullable) |
+| action | TEXT | e.g. `patient.view`, `ai.chat`, `patient.access_denied` |
+| patient_id | TEXT | Patient concerned, if any |
+| outcome | TEXT | `success`, `failure` or `denied` |
+| detail | JSON | Extra context |
+| ip | TEXT | Client IP as reported by the reverse proxy |
 
-- **POST** `/api/auth/logout` - Logout and clear session
+## 🔌 Server Actions & Access Control
 
-- **GET** `/api/auth/session` - Check current session status
+There are no REST endpoints; the UI calls Server Actions in `src/lib/actions/`. Every action re-checks the session and, for patient data, the caller's access:
 
-### Patients
+| Role | Patients visible |
+|------|------------------|
+| `admin` | All |
+| `clinician` | Assigned in `doctor_patient_assignments` |
+| `researcher`, `user` | None |
 
-- **GET** `/api/patients` - Get assigned patients for logged-in user
-
-- **POST** `/api/patients` - Assign patient to user
-  ```json
-  { "patientId": "UDN-P4" }
-  ```
+Requests for a patient outside the caller's scope return "not found" and are written to the audit log.
+`src/proxy.ts` additionally redirects signed-out users away from app pages and sets a per-request nonce Content-Security-Policy.
 
 ## 📜 Available Scripts
 
@@ -262,11 +241,14 @@ yarn start            # Start production server
 yarn lint             # Run ESLint
 
 # Database
-yarn db:generate      # Generate Drizzle migrations
-yarn db:push          # Push schema to database
-yarn db:seed          # Seed database with initial data
+yarn db:generate      # Generate a migration from schema changes
+yarn db:apply         # Apply pending migrations
+yarn db:migrate       # generate + apply
+yarn db:seed          # Create initial accounts
 yarn db:studio        # Open Drizzle Studio (database GUI)
-yarn db:migrate       # Run migrations (alternative to push)
+
+# Accounts
+yarn user:set-password <email>   # Reset a password and revoke that user's sessions
 ```
 
 ## 🔧 Drizzle Studio
@@ -330,9 +312,11 @@ yarn dev -- -p 3001
 Set these in your production environment:
 
 ```env
-JWT_SECRET=<strong-random-secret>
 NODE_ENV=production
+GEMINI_API_KEY=<key>
 ```
+
+Serve over HTTPS behind a reverse proxy that overwrites `X-Forwarded-For` (used for audit IPs and per-IP login throttling). In production the session cookie uses the `__Host-` prefix and HSTS is enabled.
 
 ### Build and Deploy
 
@@ -353,12 +337,19 @@ yarn start
 
 ## 🔒 Security Notes
 
-1. **Change default passwords** before production deployment
-2. **Use strong JWT secrets** (minimum 32 characters)
-3. **Enable HTTPS** in production
-4. **Regular security updates** for dependencies
-5. **Implement rate limiting** on authentication endpoints
-6. **Add CORS configuration** for production
+Implemented:
+- Opaque, hashed, revocable sessions; 30-minute idle and 8-hour absolute expiry; `SameSite=Strict` cookies
+- Server-side authorization on every action (role + patient assignment); denied access is audited
+- Login throttling: 5 failures per account → 15-minute lockout; 30 attempts per IP per 15 minutes
+- Nonce-based CSP, HSTS, `X-Frame-Options`, `nosniff`, `Referrer-Policy: no-referrer`, `Permissions-Policy`
+- zod validation of all action inputs; patient data passed to Gemini as delimited data under a system instruction
+- Audit log of PHI access and AI requests
+
+Operational responsibilities:
+- Rotate any secrets that were ever committed, and keep `.env*` and `data/` out of git
+- Confirm your Gemini terms (or a BAA) permit sending patient data before enabling AI features
+- The login throttle is in-memory: move it to a shared store if you run more than one instance
+- Back up `data/care4rare.db`; it contains PHI, so encrypt backups
 
 ## 📝 License
 

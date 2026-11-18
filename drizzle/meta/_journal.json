@@ -15,6 +15,41 @@
       "when": 1770902035551,
       "tag": "0001_swift_invisible_woman",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1795014265675,
+      "tag": "0002_clear_legacy_sessions",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1795014266181,
+      "tag": "0003_sessions_add_token_hash",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1795014266606,
+      "tag": "0004_drop_legacy_doctors_and_link_assignments",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1795014267019,
+      "tag": "0005_backfill_assignments",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1795014593951,
+      "tag": "0006_audit_events",
+      "breakpoints": true
     }
   ]
 }

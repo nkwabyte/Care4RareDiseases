@@ -84,7 +84,7 @@ export function ClinicalPhenotypes({ initialPhenotypes = [] }: ClinicalPhenotype
         
         {/* Selected Terms as Chips */}
         {selectedTerms.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-3 p-3 bg-[#2d1b4e] rounded-md border border-purple-900/20">
+          <div className="flex flex-wrap gap-2 mb-3 p-3 bg-surface rounded-md border border-purple-900/20">
             {selectedTerms.map((term, index) => (
               <Badge
                 key={index}
@@ -111,7 +111,7 @@ export function ClinicalPhenotypes({ initialPhenotypes = [] }: ClinicalPhenotype
           value={inputValue}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          className="bg-[#2d1b4e] border-purple-900/20 text-slate-200 placeholder:text-slate-500 mb-3"
+          className="bg-surface border-purple-900/20 text-slate-200 placeholder:text-muted-foreground mb-3"
         />
         
         {/* Sample Terms */}
@@ -124,7 +124,7 @@ export function ClinicalPhenotypes({ initialPhenotypes = [] }: ClinicalPhenotype
                 variant="outline"
                 className={`cursor-pointer transition-colors ${
                   selectedTerms.includes(term)
-                    ? 'bg-slate-700 text-slate-500 border-slate-600 cursor-not-allowed'
+                    ? 'bg-slate-700 text-muted-foreground border-slate-600 cursor-not-allowed'
                     : 'hover:bg-purple-900/30 hover:border-purple-700 hover:text-purple-300 text-slate-300 border-purple-900/20'
                 }`}
                 onClick={() => !selectedTerms.includes(term) && handleSampleTermClick(term)}

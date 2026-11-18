@@ -119,10 +119,10 @@ While Server Actions are async, Redux provides:
 3. Thunk calls loginAction() Server Action
 4. Server Action:
    - Queries users table via Drizzle
-   - Validates password with bcrypt
-   - Creates JWT token
-   - Stores session in database
-   - Sets httpOnly cookie
+   - Checks the login throttle (per account and per IP)
+   - Validates password with bcrypt (a dummy hash is compared for unknown emails, so timing does not reveal accounts)
+   - Generates a random 256-bit token; stores only its SHA-256 hash in `sessions`
+   - Sets the httpOnly, SameSite=Strict cookie and writes an audit event
 5. Returns user data to Redux
 6. Redux updates auth state
 7. Component redirects to dashboard
@@ -135,9 +135,10 @@ While Server Actions are async, Redux provides:
 2. useEffect() dispatches fetchAllPatients()
 3. Thunk calls getAllPatientsAction() Server Action
 4. Server Action:
-   - Verifies authentication via getSessionAction()
-   - Queries patients table via Drizzle
-   - Returns patient data
+   - Resolves the user from the session (requireUser) — expired/idle sessions are deleted
+   - Computes the user's patient scope (admin: all; clinician: assigned; others: none)
+   - Queries only in-scope rows via Drizzle
+   - Returns patient data (single-patient reads are audited)
 5. Redux stores patients in state
 6. Component renders from state
 ```
@@ -146,12 +147,14 @@ While Server Actions are async, Redux provides:
 
 ### Core Entities
 
-1. **users** -Authentication & authorization
-2. **doctors** - Legacy doctor accounts (backward compatibility)
-3. **sessions** - Active user sessions (JWT tokens)
-4. **patients** - Patient clinical records with genetic data
-5. **reports** - Generated patient reports
-6. **doctor_patient_assignments** - Many-to-many relationship
+1. **users** - Accounts and roles (admin, clinician, researcher, user)
+2. **sessions** - Active sessions (hashed opaque tokens, absolute + idle expiry)
+3. **patients** - Patient clinical records with genetic data
+4. **reports** - Generated patient reports
+5. **doctor_patient_assignments** - Clinician ↔ patient access (FK to users)
+6. **audit_events** - Append-only security and PHI-access log
+
+Migrations live in `drizzle/` and are applied in order by `yarn db:apply` (`scripts/migrate.ts`), tracked in `__drizzle_migrations`.
 
 ### Schema Features
 
@@ -162,20 +165,28 @@ While Server Actions are async, Redux provides:
 
 ## Security Architecture
 
+Code lives in `src/lib/auth/` (all `server-only`) and `src/lib/audit.ts`.
+
 ### Authentication
 
-1. **Password Hashing**: bcrypt with automatic salt
-2. **JWT Tokens**: Signed with HS256, 7-day expiration
-3. **httpOnly Cookies**: Prevents XSS attacks
-4. **Secure Cookies**: HTTPS-only in production
-5. **Session Validation**: Every Server Action checks session
+1. **Password hashing**: bcrypt (cost 12 for new hashes)
+2. **Sessions**: random 256-bit token in the cookie; only its SHA-256 hash is stored, so a database leak does not expose live sessions. Server-side revocation on logout, password change and "sign out everywhere".
+3. **Expiry**: 30-minute idle timeout, 8-hour absolute lifetime
+4. **Cookies**: httpOnly, SameSite=Strict, Secure + `__Host-` prefix in production
+5. **Throttling**: 5 failures per account → 15-minute lockout; 30 attempts per IP per 15 minutes (in-memory)
 
 ### Authorization
 
-- Role-based access control (RBAC)
-- Server-side token verification
-- Session expiration checks
-- SQL injection prevention (Drizzle parameterized queries)
+- `requireUser()` / `requireRole()` at the top of every Server Action
+- `requirePatientAccess(patientId)` for every patient-scoped read, write and AI request; denials are audited and reported to the client as "not found"
+- List queries are filtered by the caller's patient scope in `src/lib/data/scoped.ts`
+- Inputs validated with zod; Drizzle parameterises all SQL
+
+### Defence in depth
+
+- `src/proxy.ts`: redirects signed-out users from app pages (optimistic cookie check only — the actions are the real gate) and sets a per-request nonce CSP with `strict-dynamic`
+- `next.config.ts`: HSTS (production), `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy: no-referrer`, `Permissions-Policy`, COOP/CORP; `X-Powered-By` disabled
+- AI prompts: patient data is loaded server-side (never accepted from the client) and wrapped in `<patient_data>` under a system instruction that forbids following embedded instructions
 
 ## Performance Optimizations
 
@@ -216,14 +227,16 @@ yarn start  #Start production server
 
 ### Environment Variables
 
-- `JWT_SECRET`: Strong random string (min  32 chars)
+- `GEMINI_API_KEY`: server-side only
+- `DATABASE_PATH` (optional)
 - `NODE_ENV`: 'development' or 'production'
 
 ### Database
 
 - SQLite file: `data/care4rare.db`
 - Backup strategy: Copy database file
-- Migrations: Use `yarn db:generate` and `yarn db:push`
+- Migrations: `yarn db:generate` then `yarn db:apply`
+- Contains PHI: keep out of git, encrypt backups
 
 ## Scaling Considerations
 
@@ -232,6 +245,7 @@ yarn start  #Start production server
 - Single SQLite file (not distributed)
 - Limited concurrency
 - Not suitable for multi-tenant
+- Login throttle is per-process memory; use a shared store before running several instances
 
 ### Migration Path
 
@@ -249,8 +263,8 @@ yarn start  #Start production server
 | Redux Toolkit | Latest | State management |
 | Tailwind CSS | v4 | Utility-first styling |
 | shadcn/ui | Latest | Component library |
-| bcrypt | Latest | Password hashing |
-| jose | Latest | JWT token handling |
+| bcryptjs | Latest | Password hashing |
+| zod | Latest | Server Action input validation |
 
 ## File Organization
 

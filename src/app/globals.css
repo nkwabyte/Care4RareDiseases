@@ -1,55 +1,108 @@
 @import "tailwindcss";
 
-@theme {
-    --color-background: 0 0% 100%;
-    --color-foreground: 222.2 84% 4.9%;
-    --color-card: 0 0% 100%;
-    --color-card-foreground: 222.2 84% 4.9%;
-    --color-popover: 0 0% 100%;
-    --color-popover-foreground: 222.2 84% 4.9%;
-    --color-primary: 221.2 83.2% 53.3%;
-    --color-primary-foreground: 210 40% 98%;
-    --color-secondary: 210 40% 96.1%;
-    --color-secondary-foreground: 222.2 47.4% 11.2%;
-    --color-muted: 210 40% 96.1%;
-    --color-muted-foreground: 215.4 16.3% 46.9%;
-    --color-accent: 210 40% 96.1%;
-    --color-accent-foreground: 222.2 47.4% 11.2%;
-    --color-destructive: 0 84.2% 60.2%;
-    --color-destructive-foreground: 210 40% 98%;
-    --color-border: 214.3 31.8% 91.4%;
-    --color-input: 214.3 31.8% 91.4%;
-    --color-ring: 221.2 83.2% 53.3%;
+/* The palette below is dark. `dark:` variants are class-based and deliberately inactive (no `.dark` on <html>),
+   so rendering never depends on the OS colour scheme and component classes are not overridden. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Design tokens. Components use semantic utilities (bg-card, text-muted-foreground, bg-surface …)
+ * rather than raw hex values, so the palette can be tuned in one place.
+ * Contrast: foreground and muted-foreground both exceed WCAG AA (4.5:1) on background, card and surface.
+ */
+:root {
+    color-scheme: dark;
+
+    --background: #0a0614;
+    --foreground: #ece9f5;
+
+    --card: #100a1f;
+    --card-foreground: #ece9f5;
+    --popover: #1a0f2e;
+    --popover-foreground: #ece9f5;
+
+    /* Raised fields and inset panels (inputs, variant cards, list rows) */
+    --surface: #2d1b4e;
+    --sidebar: #0f0820;
+
+    --primary: #9333ea;
+    --primary-foreground: #ffffff;
+    --secondary: #24163d;
+    --secondary-foreground: #ece9f5;
+    --muted: #1a0f2e;
+    --muted-foreground: #a8a3bf;
+    --accent: #2d1b4e;
+    --accent-foreground: #f5f3ff;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+
+    --border: #2a1d47;
+    --input: #3a2a5c;
+    --ring: #a855f7;
+
+    /* Categorical data colours (charts) */
+    --chart-1: #a855f7;
+    --chart-2: #f59e0b;
+    --chart-3: #22d3ee;
+    --chart-4: #4ade80;
+    --chart-5: #f472b6;
+
     --radius: 0.5rem;
 }
 
-@theme dark {
-    --color-background: 222.2 84% 4.9%;
-    --color-foreground: 210 40% 98%;
-    --color-card: 222.2 84% 4.9%;
-    --color-card-foreground: 210 40% 98%;
-    --color-popover: 222.2 84% 4.9%;
-    --color-popover-foreground: 210 40% 98%;
-    --color-primary: 217.2 91.2% 59.8%;
-    --color-primary-foreground: 222.2 47.4% 11.2%;
-    --color-secondary: 217.2 32.6% 17.5%;
-    --color-secondary-foreground: 210 40% 98%;
-    --color-muted: 217.2 32.6% 17.5%;
-    --color-muted-foreground: 215 20.2% 65.1%;
-    --color-accent: 217.2 32.6% 17.5%;
-    --color-accent-foreground: 210 40% 98%;
-    --color-destructive: 0 62.8% 30.6%;
-    --color-destructive-foreground: 210 40% 98%;
-    --color-border: 217.2 32.6% 17.5%;
-    --color-input: 217.2 32.6% 17.5%;
-    --color-ring: 224.3 76.3% 48%;
+@theme inline {
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-surface: var(--surface);
+    --color-sidebar: var(--sidebar);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
 }
 
-* {
-    border-color: hsl(var(--color-border));
+@layer base {
+    * {
+        border-color: var(--border);
+    }
+
+    body {
+        background-color: var(--background);
+        color: var(--foreground);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* Visible keyboard focus everywhere, including custom clickable elements. */
+    :focus-visible {
+        outline: 2px solid var(--ring);
+        outline-offset: 2px;
+    }
 }
 
-body {
-    background-color: hsl(var(--color-background));
-    color: hsl(var(--color-foreground));
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }

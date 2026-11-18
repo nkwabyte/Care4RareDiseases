@@ -1,420 +1,316 @@
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Activity,
   Users,
   FileText,
-  TrendingUp,
   Clock,
-  AlertCircle,
   CheckCircle,
-  BarChart3,
+  Sparkles,
   ArrowUpRight,
+  Database,
+  HelpCircle,
+  RefreshCw,
+  type LucideIcon,
 } from 'lucide-react';
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '@/components/ui/chart';
-import {
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  ResponsiveContainer,
-  Legend,
-  Tooltip,
-} from 'recharts';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useAppSelector } from '@/lib/store/hooks';
+import { getDashboardAction, type DashboardData } from '@/lib/actions/dashboard';
 
 interface DashboardScreenProps {
-  onNavigateToPatients?: () => void;
+  /** Opens a patient in the Patients workspace. */
+  onOpenPatient?: (patientId: string) => void;
 }
 
-export function DashboardScreen({ onNavigateToPatients }: DashboardScreenProps) {
-  const doctor = useAppSelector((state) => state.auth.doctor);
-
-  // Mock data for demo - in production, fetch from database via Server Actions
-  const assignedPatientIds: string[] = [];
-  const pendingAnalysisCount: number = 0;
-  const resultsReadyCount: number = 0;
-  const reviewedCount: number = 0;
-  const assignedReportsThisMonth: number = 0;
-  // Mock data for charts
-  const monthlyDiagnosesData = [
-    { month: 'Aug', diagnosed: 12, pending: 8 },
-    { month: 'Sep', diagnosed: 15, pending: 6 },
-    { month: 'Oct', diagnosed: 18, pending: 10 },
-    { month: 'Nov', diagnosed: 14, pending: 7 },
-    { month: 'Dec', diagnosed: 20, pending: 9 },
-    { month: 'Jan', diagnosed: 22, pending: 5 },
-    { month: 'Feb', diagnosed: 19, pending: 11 },
+const relativeTime = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+function timeAgo(iso: string): string {
+  const diffMs = Date.parse(iso) - Date.now();
+  const units: [Intl.RelativeTimeFormatUnit, number][] = [
+    ['year', 31_536_000_000],
+    ['month', 2_592_000_000],
+    ['day', 86_400_000],
+    ['hour', 3_600_000],
+    ['minute', 60_000],
   ];
+  for (const [unit, ms] of units) {
+    if (Math.abs(diffMs) >= ms) return relativeTime.format(Math.round(diffMs / ms), unit);
+  }
+  return 'just now';
+}
 
-  const diseaseDistributionData = [
-    { category: 'Metabolic', count: 45 },
-    { category: 'Neurological', count: 38 },
-    { category: 'Immunological', count: 22 },
-    { category: 'Cardiovascular', count: 18 },
-    { category: 'Other', count: 12 },
-  ];
-
-  const assignedPatientsData: any[] = [];
-  const pendingCases: any[] = [];
-
-  // Recent activity filtered to assigned patients only
-  const allActivity = [
-    {
-      id: 1,
-      type: 'analysis_complete',
-      patient: 'UDN-P4',
-      message: 'Analysis completed for patient UDN-P4',
-      time: '2 hours ago',
-      status: 'success',
-    },
-    {
-      id: 2,
-      type: 'alert',
-      patient: 'UDN-P12',
-      message: 'High-confidence variant detected in UDN-P12',
-      time: '6 hours ago',
-      status: 'warning',
-    },
-    {
-      id: 3,
-      type: 'report',
-      patient: 'UDN-P7',
-      message: 'Report generated for patient UDN-P7',
-      time: '1 day ago',
-      status: 'success',
-    },
-    {
-      id: 4,
-      type: 'new_patient',
-      patient: 'UDN-P18',
-      message: 'New patient UDN-P18 assigned to you',
-      time: '2 days ago',
-      status: 'info',
-    },
-  ];
-
-  const recentActivity = allActivity.filter(activity =>
-    assignedPatientIds.includes(activity.patient)
+function StatCard({ icon: Icon, label, value, tone }: { icon: LucideIcon; label: string; value: number; tone: string }) {
+  return (
+    <Card className="bg-card border-border">
+      <div className="p-6 flex items-center gap-4">
+        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${tone}`}>
+          <Icon size={24} aria-hidden />
+        </div>
+        <div>
+          <p className="text-muted-foreground text-sm">{label}</p>
+          <p className="text-3xl font-semibold text-foreground tabular-nums">{value}</p>
+        </div>
+      </div>
+    </Card>
   );
+}
 
+const ACTIVITY_ICON: Record<DashboardData['recentActivity'][number]['kind'], { icon: LucideIcon; className: string }> = {
+  report: { icon: FileText, className: 'text-cyan-400' },
+  status: { icon: CheckCircle, className: 'text-green-400' },
+  ai: { icon: Sparkles, className: 'text-purple-400' },
+};
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'High':
-        return 'bg-red-500/20 text-red-300 hover:bg-red-500/20';
-      case 'Medium':
-        return 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/20';
-      case 'Low':
-        return 'bg-slate-500/20 text-slate-300 hover:bg-slate-500/20';
-      default:
-        return 'bg-slate-500/20 text-slate-400 hover:bg-slate-500/20';
-    }
-  };
+const QUICK_ACTIONS: { href: string; icon: LucideIcon; label: string }[] = [
+  { href: '/patients', icon: Users, label: 'Open patients' },
+  { href: '/reports', icon: FileText, label: 'Reports' },
+  { href: '/database', icon: Database, label: 'Patient database' },
+  { href: '/help', icon: HelpCircle, label: 'Help' },
+];
 
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case 'analysis_complete':
-        return <CheckCircle size={16} className="text-purple-400" />;
-      case 'new_patient':
-        return <Users size={16} className="text-cyan-400" />;
-      case 'alert':
-        return <AlertCircle size={16} className="text-amber-400" />;
-      case 'report':
-        return <FileText size={16} className="text-slate-400" />;
-      default:
-        return <Activity size={16} className="text-slate-400" />;
-    }
-  };
+export function DashboardScreen({ onOpenPatient }: DashboardScreenProps) {
+  const user = useAppSelector((state) => state.auth.doctor);
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setError(null);
+    const result = await getDashboardAction();
+    if (result.success && result.data) setData(result.data);
+    else setError(result.error ?? 'Could not load the dashboard');
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch on mount
+    load();
+  }, [load]);
+
+  const totalReports = data?.reportsByMonth.reduce((sum, m) => sum + m.reports, 0) ?? 0;
+  const maxPathogenicity = Math.max(1, ...(data?.pathogenicity.map((p) => p.count) ?? [1]));
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-background">
-      {/* Top Header */}
-      <div className="bg-card border-b border-border px-6 py-4">
-        <div className="flex items-center justify-between">
+      <header className="bg-card border-b border-border px-6 py-4">
+        <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-slate-100">Dashboard</h1>
-            <p className="text-slate-400">Welcome back, {doctor?.name || 'Doctor'}</p>
+            <h1 className="text-foreground text-xl font-semibold">Dashboard</h1>
+            <p className="text-muted-foreground">Welcome back, {user?.name ?? 'Doctor'}</p>
           </div>
-          <div className="text-slate-400">
-            {new Date().toLocaleDateString('en-US', {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
-          </div>
+          <p className="text-muted-foreground hidden sm:block">
+            {new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          </p>
         </div>
-      </div>
+      </header>
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-auto p-6">
+      <main className="flex-1 overflow-auto p-6">
         <div className="max-w-7xl mx-auto space-y-6">
-          {/* Key Metrics Row */}
-          <div className="grid grid-cols-4 gap-6">
-            {/* Total Patients */}
-            <Card className="bg-card border-border">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                    <Users size={24} className="text-purple-400" />
-                  </div>
-                  <Badge className="bg-purple-500/20 text-purple-300 hover:bg-purple-500/20">
-                    Active
-                  </Badge>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-slate-500">Total Patients</p>
-                  <h2>{assignedPatientIds.length}</h2>
-                </div>
-              </div>
-            </Card>
+          {error && (
+            <div role="alert" className="flex items-center justify-between gap-4 rounded-lg border border-red-500/30 bg-red-500/10 p-4">
+              <p className="text-red-300">{error}</p>
+              <Button variant="outline" size="sm" onClick={load} className="gap-2">
+                <RefreshCw size={14} aria-hidden /> Retry
+              </Button>
+            </div>
+          )}
 
-            {/* Pending Analysis */}
-            <Card className="bg-card border-border">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-amber-500/20 rounded-lg flex items-center justify-center">
-                    <Clock size={24} className="text-amber-400" />
-                  </div>
-                  <Badge className="bg-amber-500/20 text-amber-300 hover:bg-amber-500/20">
-                    {pendingAnalysisCount} {pendingAnalysisCount === 1 ? 'case' : 'cases'}
-                  </Badge>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-slate-400">Pending Analysis</p>
-                  <h2 className="text-slate-100">{pendingAnalysisCount}</h2>
-                </div>
-              </div>
-            </Card>
+          <section aria-label="Case summary" className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+            {data ? (
+              <>
+                <StatCard icon={Users} label="Your patients" value={data.stats.total} tone="bg-purple-500/20 text-purple-400" />
+                <StatCard icon={Clock} label="Pending analysis" value={data.stats.pending} tone="bg-amber-500/20 text-amber-400" />
+                <StatCard icon={CheckCircle} label="Results ready" value={data.stats.ready} tone="bg-green-500/20 text-green-400" />
+                <StatCard icon={FileText} label="Reports this month" value={data.stats.reportsThisMonth} tone="bg-cyan-500/20 text-cyan-400" />
+              </>
+            ) : (
+              Array.from({ length: 4 }, (_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)
+            )}
+          </section>
 
-            {/* Reports This Month */}
-            <Card className="bg-card border-border">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="bg-card border-border lg:col-span-2">
               <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-cyan-500/20 rounded-lg flex items-center justify-center">
-                    <FileText size={24} className="text-cyan-400" />
+                <h2 className="text-foreground font-medium">Reports generated</h2>
+                <p className="text-muted-foreground text-sm mb-6">Last 12 months, for patients you can access</p>
+                {!data ? (
+                  <Skeleton className="h-[260px]" />
+                ) : totalReports === 0 ? (
+                  <div className="h-[260px] flex flex-col items-center justify-center text-center text-muted-foreground">
+                    <FileText size={32} className="mb-2" aria-hidden />
+                    <p>No reports in the last 12 months.</p>
                   </div>
-                  <Badge className="bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/20">
-                    Reports
-                  </Badge>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-slate-400">This Month</p>
-                  <h2 className="text-slate-100">{assignedReportsThisMonth}</h2>
-                </div>
-              </div>
-            </Card>
-
-            {/* Results Ready */}
-            <Card className="bg-card border-border">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
-                    <CheckCircle size={24} className="text-green-400" />
-                  </div>
-                  <Badge className="bg-green-500/20 text-green-300 hover:bg-green-500/20">
-                    Ready
-                  </Badge>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-slate-400">Results Ready</p>
-                  <h2 className="text-slate-100">{resultsReadyCount}</h2>
-                </div>
-              </div>
-            </Card>
-          </div>
-
-          {/* Charts Row */}
-          <div className="grid grid-cols-3 gap-6">
-            {/* Monthly Diagnoses Trend */}
-            <Card className="bg-card border-border col-span-2">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h2 className="text-slate-100">Diagnosis Activity</h2>
-                    <p className="text-slate-400">Monthly trends and pending cases</p>
-                  </div>
-                </div>
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={monthlyDiagnosesData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#2d1b4e" />
-                    <XAxis dataKey="month" stroke="#94a3b8" />
-                    <YAxis stroke="#94a3b8" />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#1a0f2e',
-                        border: '1px solid #581c87',
-                        borderRadius: '8px',
-                        color: '#e5e5e7',
-                      }}
-                    />
-                    <Legend />
-                    <Bar dataKey="diagnosed" fill="#a855f7" name="Diagnosed" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="pending" fill="#f59e0b" name="Pending" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </Card>
-
-            {/* Disease Distribution */}
-            <Card className="bg-card border-border">
-              <div className="p-6">
-                <div className="mb-6">
-                  <h2 className="text-slate-100">Disease Categories</h2>
-                  <p className="text-slate-400">Distribution by type</p>
-                </div>
-                <div className="space-y-4">
-                  {diseaseDistributionData.map((item) => (
-                    <div key={item.category}>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-slate-300">{item.category}</span>
-                        <span className="text-slate-100">{item.count}</span>
-                      </div>
-                      <div className="w-full bg-slate-700 rounded-full h-2">
-                        <div
-                          className="bg-purple-600 h-2 rounded-full transition-all"
-                          style={{ width: `${(item.count / 135) * 100}%` }}
+                ) : (
+                  <figure>
+                    <ResponsiveContainer width="100%" height={260}>
+                      <BarChart data={data.reportsByMonth} margin={{ left: -16 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                        <XAxis dataKey="label" stroke="var(--muted-foreground)" tickLine={false} />
+                        <YAxis allowDecimals={false} stroke="var(--muted-foreground)" tickLine={false} />
+                        <Tooltip
+                          cursor={{ fill: 'var(--surface)', opacity: 0.4 }}
+                          contentStyle={{
+                            backgroundColor: 'var(--popover)',
+                            border: '1px solid var(--border)',
+                            borderRadius: 8,
+                            color: 'var(--foreground)',
+                          }}
                         />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                        <Bar dataKey="reports" name="Reports" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                    <figcaption className="sr-only">
+                      {data.reportsByMonth.map((m) => `${m.label}: ${m.reports}`).join(', ')}
+                    </figcaption>
+                  </figure>
+                )}
+              </div>
+            </Card>
+
+            <Card className="bg-card border-border">
+              <div className="p-6">
+                <h2 className="text-foreground font-medium">Variant classification</h2>
+                <p className="text-muted-foreground text-sm mb-6">Primary variant, by ACMG class</p>
+                {!data ? (
+                  <Skeleton className="h-40" />
+                ) : data.pathogenicity.length === 0 ? (
+                  <p className="text-muted-foreground">No patients yet.</p>
+                ) : (
+                  <ul className="space-y-4">
+                    {data.pathogenicity.map((item) => (
+                      <li key={item.classification}>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-slate-300">{item.classification}</span>
+                          <span className="text-foreground tabular-nums">{item.count}</span>
+                        </div>
+                        <div className="w-full bg-surface rounded-full h-2" aria-hidden>
+                          <div
+                            className="bg-purple-500 h-2 rounded-full"
+                            style={{ width: `${(item.count / maxPathogenicity) * 100}%` }}
+                          />
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </Card>
           </div>
 
-          {/* Pending Cases and Recent Activity Row */}
-          <div className="grid grid-cols-2 gap-6">
-            {/* Pending Cases */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card className="bg-card border-border">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2 className="text-slate-100">Pending Cases</h2>
-                    <p className="text-slate-400">Cases requiring attention</p>
+                    <h2 className="text-foreground font-medium">Pending cases</h2>
+                    <p className="text-muted-foreground text-sm">Longest waiting first</p>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={onNavigateToPatients}
-                    className="text-purple-400 border-purple-700 hover:bg-purple-900/30"
-                  >
-                    View All
-                    <ArrowUpRight size={16} className="ml-2" />
+                  <Button asChild variant="outline" size="sm" className="text-purple-300 border-purple-700 hover:bg-surface">
+                    <Link href="/patients">
+                      View all <ArrowUpRight size={16} className="ml-1" aria-hidden />
+                    </Link>
                   </Button>
                 </div>
-                <div className="space-y-3">
-                  {pendingCases.length === 0 ? (
-                    <div className="text-center py-8 text-slate-400">
-                      <CheckCircle size={32} className="mx-auto mb-2 text-green-400" />
-                      <p>No pending cases</p>
-                      <p className="text-sm">All patients up to date</p>
-                    </div>
-                  ) : (
-                    pendingCases.map((case_) => (
-                      <div
-                        key={case_.patientId}
-                        className="flex items-center justify-between p-3 bg-[#2d1b4e] rounded-lg hover:bg-purple-900/30 transition-colors cursor-pointer"
-                        onClick={onNavigateToPatients}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                            <Users size={18} className="text-purple-400" />
-                          </div>
-                          <div>
-                            <p className="text-slate-100">{case_.patientId}</p>
-                            <p className="text-slate-400">Age: {case_.age} • {case_.daysWaiting} days waiting</p>
-                          </div>
-                        </div>
-                        <Badge className={getPriorityColor(case_.priority)}>
-                          {case_.priority}
-                        </Badge>
-                      </div>
-                    ))
-                  )}
-                </div>
+                {!data ? (
+                  <Skeleton className="h-40" />
+                ) : data.pendingCases.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <CheckCircle size={32} className="mx-auto mb-2 text-green-400" aria-hidden />
+                    <p>No cases waiting for analysis.</p>
+                  </div>
+                ) : (
+                  <ul className="space-y-3">
+                    {data.pendingCases.map((c) => (
+                      <li key={c.patientId}>
+                        <button
+                          type="button"
+                          onClick={() => onOpenPatient?.(c.patientId)}
+                          className="w-full flex items-center justify-between gap-3 p-3 bg-surface rounded-lg hover:bg-purple-900/40 transition-colors text-left"
+                        >
+                          <span className="flex items-center gap-3 min-w-0">
+                            <span className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center shrink-0">
+                              <Users size={18} className="text-purple-400" aria-hidden />
+                            </span>
+                            <span className="min-w-0">
+                              <span className="block text-foreground">{c.patientId}</span>
+                              <span className="block text-muted-foreground text-sm truncate">
+                                {c.age} y · {c.sex}
+                                {c.gene ? ` · ${c.gene}` : ''}
+                              </span>
+                            </span>
+                          </span>
+                          <span className="text-sm text-amber-300 shrink-0 tabular-nums">
+                            {c.daysWaiting} {c.daysWaiting === 1 ? 'day' : 'days'} waiting
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </Card>
 
-            {/* Recent Activity */}
             <Card className="bg-card border-border">
               <div className="p-6">
-                <div className="mb-6">
-                  <h2 className="text-slate-100">Recent Activity</h2>
-                  <p className="text-slate-400">Latest updates and notifications</p>
-                </div>
-                <div className="space-y-4">
-                  {recentActivity.length === 0 ? (
-                    <div className="text-center py-8 text-slate-400">
-                      <Activity size={32} className="mx-auto mb-2" />
-                      <p>No recent activity</p>
-                    </div>
-                  ) : (
-                    recentActivity.map((activity) => (
-                      <div key={activity.id} className="flex items-start gap-3">
-                        <div className="w-8 h-8 bg-[#2d1b4e] rounded-lg flex items-center justify-center shrink-0 mt-0.5">
-                          {getActivityIcon(activity.type)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-slate-200">{activity.message}</p>
-                          <p className="text-slate-400">{activity.time}</p>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
+                <h2 className="text-foreground font-medium">Recent activity</h2>
+                <p className="text-muted-foreground text-sm mb-6">Reports, analyses and status changes</p>
+                {!data ? (
+                  <Skeleton className="h-40" />
+                ) : data.recentActivity.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Activity size={32} className="mx-auto mb-2" aria-hidden />
+                    <p>No recent activity.</p>
+                  </div>
+                ) : (
+                  <ul className="space-y-4">
+                    {data.recentActivity.map((a) => {
+                      const { icon: Icon, className } = ACTIVITY_ICON[a.kind];
+                      return (
+                        <li key={a.id} className="flex items-start gap-3">
+                          <span className="w-8 h-8 bg-surface rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+                            <Icon size={16} className={className} aria-hidden />
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-slate-200">{a.message}</p>
+                            <p className="text-muted-foreground text-sm">
+                              <time dateTime={a.at} title={new Date(a.at).toLocaleString()}>
+                                {timeAgo(a.at)}
+                              </time>
+                            </p>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
               </div>
             </Card>
           </div>
 
-          {/* Quick Actions */}
-          <Card className="bg-card border-border">
-            <div className="p-6">
-              <h2 className="mb-6 text-slate-100">Quick Actions</h2>
-              <div className="grid grid-cols-4 gap-4">
-                <Button
-                  variant="outline"
-                  className="h-auto py-6 flex flex-col items-center gap-2 hover:bg-purple-900/30 hover:border-purple-700 text-slate-200"
-                  onClick={onNavigateToPatients}
-                >
-                  <Users size={24} className="text-purple-400" />
-                  <span>New Patient</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-auto py-6 flex flex-col items-center gap-2 hover:bg-purple-900/30 hover:border-purple-700 text-slate-200"
-                >
-                  <Activity size={24} className="text-purple-400" />
-                  <span>Run Analysis</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-auto py-6 flex flex-col items-center gap-2 hover:bg-purple-900/30 hover:border-purple-700 text-slate-200"
-                >
-                  <FileText size={24} className="text-purple-400" />
-                  <span>Generate Report</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-auto py-6 flex flex-col items-center gap-2 hover:bg-purple-900/30 hover:border-purple-700 text-slate-200"
-                >
-                  <BarChart3 size={24} className="text-purple-400" />
-                  <span>View Analytics</span>
-                </Button>
+          <nav aria-label="Quick actions">
+            <Card className="bg-card border-border">
+              <div className="p-6">
+                <h2 className="mb-6 text-foreground font-medium">Quick actions</h2>
+                <ul className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  {QUICK_ACTIONS.map(({ href, icon: Icon, label }) => (
+                    <li key={href}>
+                      <Link
+                        href={href}
+                        className="h-full py-6 flex flex-col items-center gap-2 rounded-lg border border-border text-slate-200 hover:bg-surface hover:border-purple-700 transition-colors"
+                      >
+                        <Icon size={24} className="text-purple-400" aria-hidden />
+                        <span>{label}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
-            </div>
-          </Card>
+            </Card>
+          </nav>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

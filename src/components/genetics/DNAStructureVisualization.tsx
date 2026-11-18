@@ -11,7 +11,7 @@ export function DNAStructureVisualization({ variantInfo }: DNAStructureVisualiza
     return (
       <Card className="p-5 bg-card border-border">
         <h3 className="mb-4 text-slate-100">Variant Information</h3>
-        <div className="bg-[#2d1b4e] rounded-lg p-6 text-center text-slate-400">
+        <div className="bg-surface rounded-lg p-6 text-center text-slate-400">
           No variant data available for this patient
         </div>
       </Card>
@@ -33,7 +33,7 @@ export function DNAStructureVisualization({ variantInfo }: DNAStructureVisualiza
       <h3 className="mb-4 text-slate-100">Variant Information</h3>
 
       {/* Variant Details Grid */}
-      <div className="bg-[#2d1b4e] rounded-lg p-5 space-y-4">
+      <div className="bg-surface rounded-lg p-5 space-y-4">
         {/* Top Row - Gene and Pathogenicity */}
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">

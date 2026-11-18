@@ -227,7 +227,7 @@ export function ReportsScreen() {
                 placeholder="Filter by Date"
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
-                className="pl-10 w-56 bg-[#2d1b4e] border-purple-900/20 text-slate-200"
+                className="pl-10 w-56 bg-surface border-purple-900/20 text-slate-200"
               />
             </div>
 
@@ -242,7 +242,7 @@ export function ReportsScreen() {
                 placeholder="Search Reports"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 w-64 bg-[#2d1b4e] border-purple-900/20 text-slate-200 placeholder:text-slate-500"
+                className="pl-10 w-64 bg-surface border-purple-900/20 text-slate-200 placeholder:text-muted-foreground"
               />
             </div>
           </div>

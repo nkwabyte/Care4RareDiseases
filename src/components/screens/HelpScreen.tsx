@@ -38,7 +38,7 @@ export function HelpScreen() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="bg-[#1a0f2e] border border-purple-900/20">
+          <TabsList className="bg-popover border border-purple-900/20">
             <TabsTrigger 
               value="overview"
               className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
@@ -84,7 +84,7 @@ export function HelpScreen() {
                 <Separator className="bg-purple-900/20" />
 
                 <div className="grid md:grid-cols-3 gap-4">
-                  <div className="bg-[#1a0f2e] rounded-lg p-4 border border-purple-900/20">
+                  <div className="bg-popover rounded-lg p-4 border border-purple-900/20">
                     <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center mb-3">
                       <FileUp className="w-5 h-5 text-purple-400" />
                     </div>
@@ -94,7 +94,7 @@ export function HelpScreen() {
                     </p>
                   </div>
 
-                  <div className="bg-[#1a0f2e] rounded-lg p-4 border border-purple-900/20">
+                  <div className="bg-popover rounded-lg p-4 border border-purple-900/20">
                     <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center mb-3">
                       <FileText className="w-5 h-5 text-purple-400" />
                     </div>
@@ -104,7 +104,7 @@ export function HelpScreen() {
                     </p>
                   </div>
 
-                  <div className="bg-[#1a0f2e] rounded-lg p-4 border border-purple-900/20">
+                  <div className="bg-popover rounded-lg p-4 border border-purple-900/20">
                     <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center mb-3">
                       <CheckCircle className="w-5 h-5 text-purple-400" />
                     </div>
@@ -169,7 +169,7 @@ export function HelpScreen() {
                   <h4 className="text-slate-100">Required VCF Specifications:</h4>
                   
                   <div className="grid gap-3">
-                    <div className="bg-[#1a0f2e] rounded-lg p-4 border border-purple-900/20">
+                    <div className="bg-popover rounded-lg p-4 border border-purple-900/20">
                       <div className="flex items-center gap-2 mb-2">
                         <Badge variant="outline" className="bg-purple-500/20 text-purple-300 border-purple-700">
                           Version
@@ -179,7 +179,7 @@ export function HelpScreen() {
                       <p className="text-slate-300">Must include version specification in header</p>
                     </div>
 
-                    <div className="bg-[#1a0f2e] rounded-lg p-4 border border-purple-900/20">
+                    <div className="bg-popover rounded-lg p-4 border border-purple-900/20">
                       <div className="flex items-center gap-2 mb-2">
                         <Badge variant="outline" className="bg-purple-500/20 text-purple-300 border-purple-700">
                           Reference
@@ -189,7 +189,7 @@ export function HelpScreen() {
                       <p className="text-slate-300">Specify reference genome build in header</p>
                     </div>
 
-                    <div className="bg-[#1a0f2e] rounded-lg p-4 border border-purple-900/20">
+                    <div className="bg-popover rounded-lg p-4 border border-purple-900/20">
                       <div className="flex items-center gap-2 mb-2">
                         <Badge variant="outline" className="bg-purple-500/20 text-purple-300 border-purple-700">
                           Compression
@@ -199,7 +199,7 @@ export function HelpScreen() {
                       <p className="text-slate-300">Uncompressed or bgzip-compressed files accepted</p>
                     </div>
 
-                    <div className="bg-[#1a0f2e] rounded-lg p-4 border border-purple-900/20">
+                    <div className="bg-popover rounded-lg p-4 border border-purple-900/20">
                       <div className="flex items-center gap-2 mb-2">
                         <Badge variant="outline" className="bg-purple-500/20 text-purple-300 border-purple-700">
                           Annotations
@@ -215,7 +215,7 @@ export function HelpScreen() {
 
                 <div className="space-y-3">
                   <h4 className="text-slate-100">Sample VCF Header:</h4>
-                  <div className="bg-[#0a0514] rounded-lg p-4 border border-purple-900/20 font-mono text-sm overflow-x-auto">
+                  <div className="bg-background rounded-lg p-4 border border-purple-900/20 font-mono text-sm overflow-x-auto">
                     <pre className="text-slate-300">
 {`##fileformat=VCFv4.2
 ##reference=GRCh38
@@ -243,7 +243,7 @@ export function HelpScreen() {
 
                 <div className="space-y-2">
                   <h4 className="text-slate-100">Format Structure:</h4>
-                  <div className="bg-[#0a0514] rounded-lg p-4 border border-purple-900/20">
+                  <div className="bg-background rounded-lg p-4 border border-purple-900/20">
                     <div className="space-y-2 font-mono text-sm">
                       <div className="flex items-start gap-3">
                         <span className="text-purple-400">HPO ID:</span>
@@ -310,7 +310,7 @@ export function HelpScreen() {
                       Call variants and add functional annotations using recommended tools:
                     </p>
                     
-                    <div className="bg-[#1a0f2e] rounded-lg p-4 border border-purple-900/20">
+                    <div className="bg-popover rounded-lg p-4 border border-purple-900/20">
                       <h4 className="text-slate-100 mb-2">Recommended Tools:</h4>
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
@@ -382,7 +382,7 @@ export function HelpScreen() {
                       Collect and standardize clinical phenotype information:
                     </p>
                     
-                    <div className="bg-[#1a0f2e] rounded-lg p-4 border border-purple-900/20">
+                    <div className="bg-popover rounded-lg p-4 border border-purple-900/20">
                       <h4 className="text-slate-100 mb-3">HPO Term Selection:</h4>
                       <ol className="list-decimal list-inside space-y-2 text-slate-300 ml-2">
                         <li>Review patient clinical presentation</li>
@@ -460,7 +460,7 @@ export function HelpScreen() {
                       Download
                     </Button>
                   </div>
-                  <div className="bg-[#0a0514] rounded-lg p-4 border border-purple-900/20 overflow-x-auto">
+                  <div className="bg-background rounded-lg p-4 border border-purple-900/20 overflow-x-auto">
                     <pre className="font-mono text-xs text-slate-300">
 {`##fileformat=VCFv4.2
 ##reference=GRCh38
@@ -489,7 +489,7 @@ chr14	1122334	.	G	A	920.33	PASS	DP=78;AF=0.51;CSQ=A|missense_variant|MODERATE|CH
                   <h3 className="text-slate-100">Sample Patient Phenotypes</h3>
                   
                   <div className="grid md:grid-cols-2 gap-4">
-                    <div className="bg-[#1a0f2e] rounded-lg p-4 border border-purple-900/20">
+                    <div className="bg-popover rounded-lg p-4 border border-purple-900/20">
                       <div className="flex items-center gap-2 mb-3">
                         <Badge className="bg-purple-500/20 text-purple-300 border-purple-700">
                           HP:0001290
@@ -502,7 +502,7 @@ chr14	1122334	.	G	A	920.33	PASS	DP=78;AF=0.51;CSQ=A|missense_variant|MODERATE|CH
                       </p>
                     </div>
 
-                    <div className="bg-[#1a0f2e] rounded-lg p-4 border border-purple-900/20">
+                    <div className="bg-popover rounded-lg p-4 border border-purple-900/20">
                       <div className="flex items-center gap-2 mb-3">
                         <Badge className="bg-purple-500/20 text-purple-300 border-purple-700">
                           HP:0001250
@@ -515,7 +515,7 @@ chr14	1122334	.	G	A	920.33	PASS	DP=78;AF=0.51;CSQ=A|missense_variant|MODERATE|CH
                       </p>
                     </div>
 
-                    <div className="bg-[#1a0f2e] rounded-lg p-4 border border-purple-900/20">
+                    <div className="bg-popover rounded-lg p-4 border border-purple-900/20">
                       <div className="flex items-center gap-2 mb-3">
                         <Badge className="bg-purple-500/20 text-purple-300 border-purple-700">
                           HP:0001263
@@ -528,7 +528,7 @@ chr14	1122334	.	G	A	920.33	PASS	DP=78;AF=0.51;CSQ=A|missense_variant|MODERATE|CH
                       </p>
                     </div>
 
-                    <div className="bg-[#1a0f2e] rounded-lg p-4 border border-purple-900/20">
+                    <div className="bg-popover rounded-lg p-4 border border-purple-900/20">
                       <div className="flex items-center gap-2 mb-3">
                         <Badge className="bg-purple-500/20 text-purple-300 border-purple-700">
                           HP:0002188
@@ -549,7 +549,7 @@ chr14	1122334	.	G	A	920.33	PASS	DP=78;AF=0.51;CSQ=A|missense_variant|MODERATE|CH
                 <div className="space-y-3">
                   <h3 className="text-slate-100">Complete Case Example</h3>
                   
-                  <div className="bg-[#1a0f2e] rounded-lg p-6 border border-purple-900/20 space-y-4">
+                  <div className="bg-popover rounded-lg p-6 border border-purple-900/20 space-y-4">
                     <div>
                       <h4 className="text-slate-100 mb-2">Patient Demographics</h4>
                       <div className="grid grid-cols-2 gap-3 text-slate-300">

@@ -19,7 +19,7 @@ export function GenotypePhenotypeAnalysis({ patientData }: GenotypePhenotypeAnal
     const handleGenerateAnalysis = async () => {
         setLoading(true);
         try {
-            const result = await generateGenotypePhenotypeAnalysis(patientData);
+            const result = await generateGenotypePhenotypeAnalysis(patientData.id);
             if (result.success && result.analysis) {
                 setAnalysis(result.analysis);
                 toast.success('Genotype-Phenotype analysis generated successfully');
@@ -67,11 +67,11 @@ export function GenotypePhenotypeAnalysis({ patientData }: GenotypePhenotypeAnal
             </div>
 
             {analysis ? (
-                <div className="prose prose-invert max-w-none bg-[#1a0f2e]/50 p-6 rounded-lg border border-purple-900/20">
+                <div className="prose prose-invert max-w-none bg-popover/50 p-6 rounded-lg border border-purple-900/20">
                     <ReactMarkdown>{analysis}</ReactMarkdown>
                 </div>
             ) : (
-                <div className="flex flex-col items-center justify-center py-12 text-slate-500 border-2 border-dashed border-slate-800 rounded-lg bg-slate-900/20">
+                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground border-2 border-dashed border-slate-800 rounded-lg bg-slate-900/20">
                     <Stethoscope className="w-12 h-12 mb-4 text-slate-700" />
                     <p className="max-w-md text-center">
                         Generate a deep learning analysis connecting the specific genetic variants to the observed clinical phenotypes using Gemini 2.5 Pro.

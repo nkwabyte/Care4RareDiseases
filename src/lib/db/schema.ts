@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, index, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
 
 // Users table - for authentication and authorization
@@ -13,34 +13,23 @@ export const users = sqliteTable('users', {
     updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
 });
 
-// Doctors table (existing)
-export const doctors = sqliteTable('doctors', {
-    id: integer('id').primaryKey({ autoIncrement: true }),
-    email: text('email').notNull().unique(),
-    passwordHash: text('password_hash').notNull(),
-    name: text('name').notNull(),
-    specialty: text('specialty'),
-    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
-});
-
-// Sessions table (existing)
+// Sessions - opaque random token in the cookie; only its SHA-256 hash is stored.
 export const sessions = sqliteTable('sessions', {
     id: integer('id').primaryKey({ autoIncrement: true }),
-    userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }),
-    doctorId: integer('doctor_id').references(() => doctors.id, { onDelete: 'cascade' }),
-    token: text('token').notNull().unique(),
+    userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    tokenHash: text('token_hash').notNull().unique(),
     expiresAt: text('expires_at').notNull(),
+    lastSeenAt: text('last_seen_at').notNull(),
     createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
-});
+}, (t) => [index('sessions_user_idx').on(t.userId)]);
 
-// Doctor-Patient assignments table (existing)
+// Clinician <-> patient assignments (column kept as doctor_id for continuity; references users.id)
 export const doctorPatientAssignments = sqliteTable('doctor_patient_assignments', {
     id: integer('id').primaryKey({ autoIncrement: true }),
-    doctorId: integer('doctor_id').notNull().references(() => doctors.id, { onDelete: 'cascade' }),
-    patientId: text('patient_id').notNull(),
+    clinicianId: integer('doctor_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    patientId: text('patient_id').notNull().references(() => patients.id, { onDelete: 'cascade' }),
     assignedAt: text('assigned_at').default(sql`CURRENT_TIMESTAMP`),
-});
+}, (t) => [uniqueIndex('assignment_clinician_patient_uq').on(t.clinicianId, t.patientId)]);
 
 // Patients table - stores all patient data
 export const patients = sqliteTable('patients', {
@@ -103,9 +92,6 @@ export const reports = sqliteTable('reports', {
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 
-export type Doctor = typeof doctors.$inferSelect;
-export type NewDoctor = typeof doctors.$inferInsert;
-
 export type Session = typeof sessions.$inferSelect;
 export type NewSession = typeof sessions.$inferInsert;
 
@@ -117,3 +103,22 @@ export type NewPatient = typeof patients.$inferInsert;
 
 export type Report = typeof reports.$inferSelect;
 export type NewReport = typeof reports.$inferInsert;
+
+// Append-only audit trail of security-relevant and PHI-access events.
+// patient_id intentionally has no FK so history survives patient deletion.
+export const auditEvents = sqliteTable('audit_events', {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    at: text('at').notNull(),
+    userId: integer('user_id').references(() => users.id, { onDelete: 'set null' }),
+    action: text('action').notNull(),
+    patientId: text('patient_id'),
+    outcome: text('outcome', { enum: ['success', 'failure', 'denied'] }).notNull(),
+    detail: text('detail', { mode: 'json' }).$type<Record<string, unknown> | null>(),
+    ip: text('ip'),
+}, (t) => [
+    index('audit_at_idx').on(t.at),
+    index('audit_user_idx').on(t.userId),
+    index('audit_patient_idx').on(t.patientId),
+]);
+
+export type AuditEvent = typeof auditEvents.$inferSelect;

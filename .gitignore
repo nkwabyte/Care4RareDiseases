@@ -35,6 +35,9 @@
 .github/agents/
 .github/hooks/
 
+.playwright-mcp/
+
+
 
 
 
@@ -72,3 +75,12 @@ next-env.d.ts
 *.old
 vite.config.ts
 index.html
+
+# secrets & patient data — never commit
+*.zip
+.env*
+!.env.example
+/data/*.db
+/data/*.db-shm
+/data/*.db-wal
+/data/*.backup*

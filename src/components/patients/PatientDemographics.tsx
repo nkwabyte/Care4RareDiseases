@@ -23,7 +23,7 @@ export function PatientDemographics({ patient }: PatientDemographicsProps) {
             placeholder="Enter patient ID"
             value={patient.id}
             readOnly
-            className="bg-[#2d1b4e] border-purple-900/20 text-slate-200"
+            className="bg-surface border-purple-900/20 text-slate-200"
           />
         </div>
 
@@ -37,7 +37,7 @@ export function PatientDemographics({ patient }: PatientDemographicsProps) {
             placeholder="Enter age"
             value={patient.age}
             readOnly
-            className="bg-[#2d1b4e] border-purple-900/20 text-slate-200"
+            className="bg-surface border-purple-900/20 text-slate-200"
           />
         </div>
 
@@ -46,10 +46,10 @@ export function PatientDemographics({ patient }: PatientDemographicsProps) {
             Sex
           </Label>
           <Select value={patient.sex}>
-            <SelectTrigger className="bg-[#2d1b4e] border-purple-900/20 text-slate-200">
+            <SelectTrigger className="bg-surface border-purple-900/20 text-slate-200">
               <SelectValue placeholder="Select sex" />
             </SelectTrigger>
-            <SelectContent className="bg-[#1a0f2e] border-purple-900/20">
+            <SelectContent className="bg-popover border-purple-900/20">
               <SelectItem value="male">Male</SelectItem>
               <SelectItem value="female">Female</SelectItem>
               <SelectItem value="other">Other</SelectItem>

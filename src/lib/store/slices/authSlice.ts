@@ -1,12 +1,8 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { loginAction, logoutAction, getSessionAction, type AuthUser } from '@/lib/actions/auth';
 
-interface Doctor {
-    id: number;
-    email: string;
-    name: string;
-    specialty?: string;
-}
+/** The signed-in user (kept under the historical `doctor` key to avoid churn in consumers). */
+type Doctor = AuthUser;
 
 interface AuthState {
     doctor: Doctor | null;

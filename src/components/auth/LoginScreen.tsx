@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface LoginScreenProps {
-  onLoginSuccess: (email: string, password: string) => void;
+  onLoginSuccess: (email: string, password: string) => Promise<void>;
 }
 
 export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
@@ -24,15 +24,14 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
     try {
       // Call the parent's onLoginSuccess which dispatches the Server Action via Redux
       await onLoginSuccess(email, password);
-    } catch (err: any) {
-      console.error('Login error:', err);
-      setError(err?.message || 'An error occurred during login. Please try again.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred during login. Please try again.');
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0514] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo/Branding */}
         <div className="text-center mb-8">
@@ -46,7 +45,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
         </div>
 
         {/* Login Card */}
-        <Card className="bg-[#1a0f2e] border-purple-900/20">
+        <Card className="bg-popover border-purple-900/20">
           <CardHeader>
             <CardTitle className="text-slate-100">Doctor Login</CardTitle>
             <CardDescription className="text-slate-400">
@@ -73,10 +72,13 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                   <Input
                     id="email"
                     type="email"
+                    name="email"
+                    autoComplete="username"
+                    spellCheck={false}
                     placeholder="doctor@hospital.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10 bg-[#0a0514] border-purple-900/20 text-slate-100 placeholder:text-slate-500 focus:border-purple-500"
+                    className="pl-10 bg-background border-purple-900/20 text-slate-100 placeholder:text-muted-foreground focus:border-purple-500"
                     required
                     disabled={isLoading}
                   />
@@ -92,10 +94,12 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                   <Input
                     id="password"
                     type="password"
+                    name="password"
+                    autoComplete="current-password"
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 bg-[#0a0514] border-purple-900/20 text-slate-100 placeholder:text-slate-500 focus:border-purple-500"
+                    className="pl-10 bg-background border-purple-900/20 text-slate-100 placeholder:text-muted-foreground focus:border-purple-500"
                     required
                     disabled={isLoading}
                   />
@@ -118,28 +122,12 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
               </p>
             </div>
 
-            <div className="mt-4 p-4 bg-slate-800/30 border border-slate-700/30 rounded-lg">
-              <p className="text-xs text-slate-400 mb-3">
-                <strong className="text-slate-300">Demo Account:</strong>
-              </p>
-              <div className="space-y-1 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-500">Email:</span>
-                  <code className="text-purple-300 bg-slate-900/50 px-2 py-0.5 rounded">admin@care4rare.com</code>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-500">Password:</span>
-                  <code className="text-purple-300 bg-slate-900/50 px-2 py-0.5 rounded">admin123</code>
-                </div>
-              </div>
-            </div>
           </CardContent>
         </Card>
 
         {/* Footer */}
-        <div className="mt-6 text-center text-xs text-slate-500">
-          <p>Secure medical diagnostic platform</p>
-          <p className="mt-1">All data is encrypted and HIPAA compliant</p>
+        <div className="mt-6 text-center text-xs text-muted-foreground">
+          <p>Authorised clinical users only. Access is logged.</p>
         </div>
       </div>
     </div>
